@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="HelloWorld.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="HelloWorld3.cpp">
+      <Filter>Filter45</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Filter45">
+      <UniqueIdentifier>{0a676a64-cf8f-4a04-82a5-e440cfd4f7b0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

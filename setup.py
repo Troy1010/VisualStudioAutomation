@@ -1,13 +1,13 @@
 from setuptools import setup
 
-setup(name='Macro_VisualStudio',
+setup(name='VisualStudioAutomation',
       version='0.1',
-      description=r'Convenience function for writing Visual Studio macros',
+      description=r'Convenience functions for writing Visual Studio macros',
       author='Troy1010',
       #author_email='',
       #url='',
       license='MIT',
-      packages=['Macro_VisualStudio'],
+      packages=['VisualStudioAutomation'],
       zip_safe=False,
       test_suite='nose.collector',
       tests_require=['nose'],
