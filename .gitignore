@@ -3,6 +3,10 @@ Examples/
 
 
 
+**/tests/res/**
+!**/tests/res/*_Backup
+
+
 
 
 # Byte-compiled / optimized / DLL files
