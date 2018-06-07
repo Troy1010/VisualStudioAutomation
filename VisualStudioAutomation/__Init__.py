@@ -42,20 +42,24 @@ class OpenDTE():
         vDTE.Solution.Close()
         vDTE.Quit()
 
-
 class OpenProj():
-    def __init__(self,sProjPath,bSave=True):
+    def __init__(self,sProjPath,bSave=True,vDTE=None):
         self.bSave = bSave
         self.sProjPath = sProjPath
+        self.vDTE = vDTE
+        self.bQuitDTE = False
     def __enter__(self):
-        self.vDTE = OpenDTE.InstantiateDTE()
+        if self.vDTE is None:
+            self.bQuitDTE = True
+            self.vDTE = OpenDTE.InstantiateDTE()
         self.vProj = self.OpenProj(self.vDTE,self.sProjPath)
         return self.vProj
     def __exit__(self, type, value, traceback):
         if self.bSave:
             self.vProj.Save()
-        OpenDTE.QuitDTE(self.vDTE)
-    def OpenProj(self,vDTE,sProjPath,vSolution=None):
+        if self.bQuitDTE:
+            OpenDTE.QuitDTE(self.vDTE)
+    def OpenProj(self,vDTE,sProjPath):
         #---Open
         sProjPath = os.path.abspath(sProjPath)
         #---Filter
