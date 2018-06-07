@@ -3,14 +3,20 @@
   <ItemGroup>
     <ClCompile Include="HelloWorld.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="HelloWorld2.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
+    <ClCompile Include="HelloWorld3.cpp">
+      <Filter>obse</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Filter54">
-      <UniqueIdentifier>{c39a1e3a-9a76-4cf5-9b37-107c22f60acd}</UniqueIdentifier>
+    <Filter Include="obse">
+      <UniqueIdentifier>{4b86f6d8-f0e5-48fd-b221-c15d950e7b10}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

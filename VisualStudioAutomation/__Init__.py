@@ -1,6 +1,11 @@
+#-------Settings
+sVisualStudioDTE = "VisualStudio.DTE.15.0"
+#-------
+
 import ctypes
 from pprint import pprint
-import TM_CommonPy as TMC
+import TM_CommonPy as TM
+import TM_CommonPy.Narrator
 import sys, os
 import xml.etree.ElementTree
 import win32com.client
@@ -20,44 +25,71 @@ def ActivateMsgHandler():
 
 #Nonfunctional
 def Register():
-    TMC.RunPowerShellScript(os.path.join(os.getcwd(),'..','..','res','Register.ps1'))
+    TM.RunPowerShellScript(os.path.join(os.getcwd(),'..','..','res','Register.ps1'))
 
 #------Public
+#-VisualStudioDevTimeEnvironment
+class OpenDTE():
+    def __enter__(self):
+        self.vDTE = self.InstantiateDTE()
+        return self.vDTE
+    def __exit__(self, type, value, traceback):
+        self.QuitDTE(self.vDTE)
+    def InstantiateDTE():
+        global sVisualStudioDTE
+        return win32com.client.Dispatch(sVisualStudioDTE)
+    def QuitDTE(vDTE):
+        vDTE.Solution.Close()
+        vDTE.Quit()
 
-def InstantiateDTE():
-    return win32com.client.Dispatch("VisualStudio.DTE.15.0")
 
-def QuitDTE(vDTE):
-    vDTE.Solution.Close()
-    vDTE.Quit()
+class OpenProj():
+    def __init__(self,sProjPath,bSave=True):
+        self.bSave = bSave
+        self.sProjPath = sProjPath
+    def __enter__(self):
+        self.vDTE = OpenDTE.InstantiateDTE()
+        self.vProj = self.OpenProj(self.vDTE,self.sProjPath)
+        return self.vProj
+    def __exit__(self, type, value, traceback):
+        if self.bSave:
+            self.vProj.Save()
+        OpenDTE.QuitDTE(self.vDTE)
+    def OpenProj(self,vDTE,sProjPath,vSolution=None):
+        #---Open
+        sProjPath = os.path.abspath(sProjPath)
+        #---Filter
+        if not os.path.isfile(sProjPath):
+            raise Exception("sProjPath does not exist:"+sProjPath)
+        #---
+        return vDTE.Solution.AddFromFile(sProjPath)
 
-def OpenProj(vDTE,sProjFile):
-    #---Open
-    sProjFile = os.path.abspath(sProjFile)
-    #---Filter
-    if not os.path.isfile(sProjFile):
-        raise Exception("sProjFile does not exist:"+sProjFile)
-    #---
-    return vDTE.Solution.AddFromFile(sProjFile)
-
-def AddFileToProj(vProj,sFileToAdd):
+def AddFileToProj(vProj,sFileToAdd,sFilter=""):
     #---Open
     sFileToAdd = os.path.abspath(sFileToAdd)
     #---Filter
     if not os.path.isfile(sFileToAdd):
         raise Exception("sFileToAdd does not exist:"+sFileToAdd)
     #---
-    return vProj.ProjectItems.AddFromFile(sFileToAdd)
+    if sFilter == "":
+        return vProj.ProjectItems.AddFromFile(sFileToAdd)
+    else:
+        if vProj.Object.CanAddFilter(sFilter):
+            vFilter = vProj.Object.AddFilter(sFilter)
+        else:
+            for i in range(1,vProj.Object.Filters.Count+1):
+                if vProj.Object.Filters.item(i).Name == sFilter:
+                    vFilter = vProj.Object.Filters.item(i)
+        return vFilter.AddFile(sFileToAdd)
 
 def AddFilterToProj(vProj,sFilterName):
     return vProj.Object.AddFilter(sFilterName)
 
 def FilterProjectItem(vProjItem,sFilterName):
-    sProjItemName = vProjItem.Name
     vProj = vProjItem.ProjectItems.ContainingProject
+    sFile = os.path.abspath(vProjItem.Name)
     vProj.Object.RemoveFile(vProjItem.Object)
-    vFilter = vProj.Object.AddFilter(sFilterName)
-    vFilter.AddFile(sProjItemName)
+    AddFileToProj(vProj,sFile,sFilterName)
 
 def AddProjRef(vProj,vProjToReference):
     vProj.Object.AddProjectReference(vProjToReference)

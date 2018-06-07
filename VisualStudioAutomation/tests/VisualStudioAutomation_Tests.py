@@ -11,6 +11,7 @@ import VisualStudioAutomation as VSA
 import subprocess, win32com
 
 import win32com.client
+import time
 
 class Test_TM_CommonPy(unittest.TestCase):
     @classmethod
@@ -29,7 +30,7 @@ class Test_TM_CommonPy(unittest.TestCase):
         os.chdir('..')
         #shutil.rmtree('Examples')
 
-    #------Tests
+    # ------Tests
 
     def test_InstantiateAndQuit(self):
         vDTE = VSA.InstantiateDTE()
@@ -49,6 +50,19 @@ class Test_TM_CommonPy(unittest.TestCase):
         #---
         vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
         VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
+        #---Close
+        vProj.Save()
+        VSA.QuitDTE(vDTE)
+
+    def test_AddFileToProj_WithFilter(self):
+        #---Open
+        os.chdir('..')
+        TMC.Copy('Examples_Backup','Examples_AddFileToProj_WithFilter',bPreDelete=True)
+        os.chdir('Examples_AddFileToProj_WithFilter')
+        vDTE = VSA.InstantiateDTE()
+        #---
+        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
+        VSA.AddFileToProj(vProj,"HelloWorld3.cpp","Filter09")
         #---Close
         vProj.Save()
         VSA.QuitDTE(vDTE)
@@ -93,3 +107,20 @@ class Test_TM_CommonPy(unittest.TestCase):
         #---Close
         vProj.Save()
         VSA.QuitDTE(vDTE)
+
+    def test_AddFileToProj2(self):
+        #---Open
+        os.chdir('..')
+        TMC.Copy('Examples_Backup','Examples_AddFileToProj2',bPreDelete=True)
+        os.chdir('Examples_AddFileToProj2')
+        vDTE = VSA.InstantiateDTE()
+        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
+        #---
+        VSA.AddFileToProj(vProj,"HelloWorld2.cpp","obse")
+        VSA.AddFileToProj(vProj,"HelloWorld3.cpp","obse")
+        #---Close
+        vProj.Save()
+        VSA.QuitDTE(vDTE)
+
+    # def test_TriggerMultistring(self):
+    #     pass
