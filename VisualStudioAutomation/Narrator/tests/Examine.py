@@ -8,13 +8,8 @@ import win32com.client
 import time
 import VisualStudioAutomation as VS
 import VisualStudioAutomation.DTEUser
-import VisualStudioAutomation.Narrator as SVNR
+import VisualStudioAutomation.Narrator as VS_NaR
 
 
-#---Open
-vDTE = VS.InstantiateDTE()
-vProj = VS.OpenProj(vDTE,"res\HelloWorld.vcxproj")
-#---
-SVNR.Proj(vProj)
-#---Close
-VS.QuitDTE(vDTE)
+with VS.OpenProj("res\HelloWorld.vcxproj") as vProj:
+    VS_NaR.Proj(vProj)

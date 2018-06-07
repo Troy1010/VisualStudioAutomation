@@ -10,6 +10,6 @@ import VisualStudioAutomation as VS
 #dev
 def Proj(vProj):
     cPossibleKeys = ["Name"
-        ,"Collection"
+        #,"Collection"
         ,"ProjectItems"]
-    print(TM.Narrator.Narrate_COM_Object(vProj,cPossibleKeys=cPossibleKeys,iRecursionThreshold=1))
+    TM.Narrator.Print(vProj,cCOMSearchMembers=cPossibleKeys,iRecursionThreshold=4)

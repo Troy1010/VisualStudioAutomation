@@ -7,5 +7,5 @@ import win32com.client
 import time
 import VisualStudioAutomation as VS
 
-with VS.OpenProj("Examples_Backup - Copy\\HelloWorld.vcxproj") as vProj:
+with TM.fragile(VS.OpenProj("Examples_Backup - Copy\\HelloWorld.vcxproj")) as vProj:
     TM.Narrator.Print(vProj.Name)
