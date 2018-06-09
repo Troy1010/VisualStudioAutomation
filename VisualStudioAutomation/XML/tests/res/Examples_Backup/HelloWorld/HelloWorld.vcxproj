@@ -52,7 +52,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings"><Import Condition="Exists('C:\TMinus1010\Projects\Coding\Python\1 Conan Scripts\HookBuildInfo\packing\test_package\conanfile.py\..\conanbuildinfo.props')" Project="C:\TMinus1010\Projects\Coding\Python\1 Conan Scripts\HookBuildInfo\packing\test_package\conanfile.py\..\conanbuildinfo.props" /></ImportGroup>
+  <ImportGroup Label="ExtensionSettings"></ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">

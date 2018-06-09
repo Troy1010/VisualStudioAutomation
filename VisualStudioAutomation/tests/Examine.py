@@ -7,5 +7,11 @@ import win32com.client
 import time
 import VisualStudioAutomation as VS
 
-with TM.fragile(VS.OpenProj("Examples_Backup - Copy\\HelloWorld.vcxproj")) as vProj:
-    TM.Narrator.Print(vProj.Name)
+with VS.OpenProj("res\\Examples\\HelloWorld.vcxproj") as vProj:
+    vProj.Properties[24].Value = "Beep"
+    vProp = vProj.Properties[24]
+#    vProp.Name = "BOOP"
+    vProp.Value = "Biip"
+    #vProj.Properties.add(5)
+    #vName.append("Beep")
+    TM.Narrator.Print(vProj.Properties,bIncludeProtected=True,bIncludePrivate=True,iRecursionThreshold=1)

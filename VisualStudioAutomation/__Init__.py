@@ -76,7 +76,7 @@ class OpenProj():
     def __exit__(self, errtype, value, traceback):
         global vActiveDTE
         if not errtype:
-            time.sleep(.300) #helps prevent race condition of multithread bug
+            time.sleep(.500) #helps prevent race condition of multithread bug
             if self.bSave:
                 self.vProj.Save()
             if self.bQuitDTE:

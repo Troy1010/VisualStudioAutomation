@@ -1,6 +1,6 @@
 import ctypes
 from pprint import pprint
-import TM_CommonPy as TMC
+import TM_CommonPy as TM
 import sys, os
 import xml.etree.ElementTree
 
@@ -10,51 +10,46 @@ def _ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile):
 
 #------Public
 
-def IntegrateProps(sConsumerProjFile,sPropsFile,sGenerator="visual_studio"):
-    #---Filter
-    if sGenerator == "visual_studio":
-        pass
-    else:
-        print("HookBuildInfo|Does not yet support generator: "+sGenerator)
-        return
-    #---Open sConsumerProjFile
-    vTree = xml.etree.ElementTree.parse(sConsumerProjFile)
-    #---define vToInsert. example: <Import Project="..\packages\OBSEPluginDevPackage.1.0.1\build\native\OBSEPluginDevPackage.targets" Condition="Exists('..\packages\OBSEPluginDevPackage.1.0.1\build\native\OBSEPluginDevPackage.targets')" />
-    vToInsert = _ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile)
-    #---Find position of vElementToInsertAt
-    vElemToInsertAt = TMC.FindElem(xml.etree.ElementTree.Element(r"ImportGroup", Label="ExtensionSettings"),vTree)
-    #---Check if vToInsert already exists
-    if not TMC.FindElem(vToInsert,vElemToInsertAt) is None:
-        print ("HookBuildInfo|sConsumerProjFile already has the element we were going to insert")
-        return
-    #---Insert
-    vElemToInsertAt.append(vToInsert)
-    #---Export
-    #-Register namespaces, otherwise ElementTree will prepend all elements with the namespace.
-    for sKey, vValue in TMC.GetXMLNamespaces(sConsumerProjFile).items():
-        xml.etree.ElementTree.register_namespace(sKey, vValue)
-    vTree.write(sConsumerProjFile)
+##region Convenience
+def SetTMDefaultSettings(sProj):
+    with TM.ElementTreeContext(sProj) as vTree:
+        ##region OutDir,IntDir
+        vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
+        vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
+        vElemToInsert1 = xml.etree.ElementTree.Element(r"OutDir") #<OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+        vElemToInsert1.text = "$(SolutionDir)bin\$(Platform)\$(Configuration)\\"
+        vElemToInsert2 = xml.etree.ElementTree.Element(r"IntDir") #<IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+        vElemToInsert2.text = "$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
+        TM.AppendIfAbsent(vElemToInsert1,vElemGlobals)
+        TM.AppendIfAbsent(vElemToInsert2,vElemGlobals)
+        ##endregion
+##endregion
 
-def IntegrateProps_Undo(sConsumerProjFile,sPropsFile,sGenerator="visual_studio"):
-    #---Filter
-    if sGenerator == "visual_studio":
-        pass
-    else:
-        print("HookBuildInfo_Undo|Does not yet support generator: "+sGenerator)
-        return
-    #---Open sConsumerProjFile
-    vTree = xml.etree.ElementTree.parse(sConsumerProjFile)
-    #---Find vToRemoveFrom, vToRemove
-    vToRemoveFrom = TMC.FindElem(xml.etree.ElementTree.Element(r"ImportGroup", Label="ExtensionSettings"),vTree)
-    vToRemove = TMC.FindElem(_ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile),vToRemoveFrom)
-    #---If not found, exit
-    if vToRemove is None:
-        print ("HookBuildInfo|WARN|Could not find vToRemove")
-        return
-    #---remove vToRemove
-    vToRemoveFrom.remove(vToRemove)
-    #---export
-    # Register namespaces, otherwise ElementTree will prepend all elements with the namespace.
-    for sKey, vValue in TMC.GetXMLNamespaces(sConsumerProjFile).items():
-        xml.etree.ElementTree.register_namespace(sKey, vValue)
-    vTree.write(sConsumerProjFile)
+#For all configs
+def SetOutputDir(sProj,sOutputDir):
+    pass
+
+def IntegrateProps(sConsumerProjFile,sPropsFile):
+    with TM.ElementTreeContext(sConsumerProjFile) as vTree:
+        #---define vToInsert. example: <Import Project="..\packages\OBSEPluginDevPackage.1.0.1\build\native\OBSEPluginDevPackage.targets" Condition="Exists('..\packages\OBSEPluginDevPackage.1.0.1\build\native\OBSEPluginDevPackage.targets')" />
+        vToInsert = _ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile)
+        #---Find position of vElementToInsertAt
+        vElemToInsertAt = TM.FindElem(xml.etree.ElementTree.Element(r"ImportGroup", Label="ExtensionSettings"),vTree)
+        #---Check if vToInsert already exists
+        if not TM.FindElem(vToInsert,vElemToInsertAt) is None:
+            print ("HookBuildInfo|sConsumerProjFile already has the element we were going to insert")
+            return
+        #---Insert
+        vElemToInsertAt.append(vToInsert)
+
+def IntegrateProps_Undo(sConsumerProjFile,sPropsFile):
+    with TM.ElementTreeContext(sConsumerProjFile) as vTree:
+        #---Find vToRemoveFrom, vToRemove
+        vToRemoveFrom = TM.FindElem(xml.etree.ElementTree.Element(r"ImportGroup", Label="ExtensionSettings"),vTree)
+        vToRemove = TM.FindElem(_ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile),vToRemoveFrom)
+        #---If not found, exit
+        if vToRemove is None:
+            print ("HookBuildInfo|WARN|Could not find vToRemove")
+            return
+        #---remove vToRemove
+        vToRemoveFrom.remove(vToRemove)
