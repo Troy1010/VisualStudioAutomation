@@ -9,7 +9,12 @@ import VisualStudioAutomation as VS
 
 #dev
 def Proj(vProj):
-    cPossibleKeys = ["Name"
-        #,"Collection"
-        ,"ProjectItems"]
-    TM.Narrator.Print(vProj,cCOMSearchMembers=cPossibleKeys,iRecursionThreshold=4)
+    cPossibleKeys = ["qwer"
+        ,"Object"
+        ,"Properties"
+        ,"Files"
+        ,"Filters"
+        #,"ProjectItems"
+        ]
+        #,cCOMSearchMembers=cPossibleKeys
+    TM.Narrator.Print(vProj,cCOMSearchMembers=cPossibleKeys,iRecursionThreshold=3,bHideDuplications=False)

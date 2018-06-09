@@ -13,114 +13,74 @@ import subprocess, win32com
 import win32com.client
 import time
 
-class Test_TM_CommonPy(unittest.TestCase):
+class CopyContext:
+    def __init__(self,sFolder,sSource='Examples_Backup',bDeleteAfter=True,bCDInto=True):
+        if bCDInto and not os.path.isdir(sSource):
+            raise ValueError("bCDInto is true but sSource is not a directory:"+sSource)
+        self.bCDInto = bCDInto
+        self.bDeleteAfter = bDeleteAfter
+        self.sFolder = sFolder
+        self.sSource = sSource
+    def __enter__(self):
+        TMC.Copy(self.sSource,self.sFolder,bPreDelete=True)
+        if self.bCDInto:
+            os.chdir(self.sFolder)
+    def __exit__(self,errtype,value,traceback):
+        if self.bCDInto:
+            os.chdir('..')
+        if self.bDeleteAfter:
+            shutil.rmtree(self.sFolder)
+
+
+class Test_VisualStudioAutomation(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','tests'))
+        os.chdir(os.path.join('VisualStudioAutomation','tests','res'))
 
     @classmethod
     def tearDownClass(self):
-        pass
-
-    def setUp(self):
-        TMC.Copy('Examples_Backup','Examples')
-        os.chdir('Examples')
-
-    def tearDown(self):
-        os.chdir('..')
-        #shutil.rmtree('Examples')
+        os.chdir(os.path.join('..','..','..'))
 
     # ------Tests
 
-    def test_InstantiateAndQuit(self):
-        vDTE = VSA.InstantiateDTE()
-        VSA.QuitDTE(vDTE)
+    def test_InstantiateAndQuitDTE(self):
+        with VSA.OpenDTE() as vDTE:
+            pass
 
     def test_OpenProj(self):
-        vDTE = VSA.InstantiateDTE()
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        VSA.QuitDTE(vDTE)
+        with CopyContext('test_OpenProj',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj",bSave=False) as vProj:
+                pass
 
     def test_AddFileToProj(self):
-        #---Open
-        os.chdir('..')
-        TMC.Copy('Examples_Backup','Examples_AddFileToProj',bPreDelete=True)
-        os.chdir('Examples_AddFileToProj')
-        vDTE = VSA.InstantiateDTE()
-        #---
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
-        #---Close
-        vProj.Save()
-        VSA.QuitDTE(vDTE)
+        with CopyContext('test_AddFileToProj',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
+                VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
 
     def test_AddFileToProj_WithFilter(self):
-        #---Open
-        os.chdir('..')
-        TMC.Copy('Examples_Backup','Examples_AddFileToProj_WithFilter',bPreDelete=True)
-        os.chdir('Examples_AddFileToProj_WithFilter')
-        vDTE = VSA.InstantiateDTE()
-        #---
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        VSA.AddFileToProj(vProj,"HelloWorld3.cpp","Filter09")
-        #---Close
-        vProj.Save()
-        VSA.QuitDTE(vDTE)
+        with CopyContext('test_AddFileToProj_WithFilter',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
+                VSA.AddFileToProj(vProj,"HelloWorld3.cpp","Filter09")
 
     def test_FilterProjectItem(self):
-        #---Open
-        os.chdir('..')
-        TMC.Copy('Examples_Backup','Examples_FilterProjectItem',bPreDelete=True)
-        os.chdir('Examples_FilterProjectItem')
-        vDTE = VSA.InstantiateDTE()
-        #---
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        vProjItem = VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
-        VSA.FilterProjectItem(vProjItem,"Filter45")
-        #---Close
-        vProj.Save()
-        VSA.QuitDTE(vDTE)
+        with CopyContext('test_FilterProjectItem',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
+                vProjItem = VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
+                VSA.FilterProjectItem(vProjItem,"Filter45")
 
     def test_AddFilterToProj(self):
-        #---Open
-        os.chdir('..')
-        TMC.Copy('Examples_Backup','Examples_AddFilterToProj',bPreDelete=True)
-        os.chdir('Examples_AddFilterToProj')
-        vDTE = VSA.InstantiateDTE()
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        #---
-        VSA.AddFilterToProj(vProj,"Filter54")
-        #---Close
-        vProj.Save()
-        VSA.QuitDTE(vDTE)
+        with CopyContext('test_AddFilterToProj',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
+                VSA.AddFilterToProj(vProj,"Filter54")
 
     def test_AddProjRef(self):
-        #---Open
-        os.chdir('..')
-        TMC.Copy('Examples_Backup','Examples_AddProjRef',bPreDelete=True)
-        os.chdir('Examples_AddProjRef')
-        vDTE = VSA.InstantiateDTE()
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        vProfToReference = VSA.OpenProj(vDTE,"HelloWorld2.vcxproj")
-        #---
-        VSA.AddProjRef(vProj,vProfToReference)
-        #---Close
-        vProj.Save()
-        VSA.QuitDTE(vDTE)
+        with CopyContext('test_AddProjRef',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
+                with VSA.OpenProj("HelloWorld2.vcxproj") as vProfToReference:
+                    VSA.AddProjRef(vProj,vProfToReference)
 
     def test_AddFileToProj2(self):
-        #---Open
-        os.chdir('..')
-        TMC.Copy('Examples_Backup','Examples_AddFileToProj2',bPreDelete=True)
-        os.chdir('Examples_AddFileToProj2')
-        vDTE = VSA.InstantiateDTE()
-        vProj = VSA.OpenProj(vDTE,"HelloWorld.vcxproj")
-        #---
-        VSA.AddFileToProj(vProj,"HelloWorld2.cpp","obse")
-        VSA.AddFileToProj(vProj,"HelloWorld3.cpp","obse")
-        #---Close
-        vProj.Save()
-        VSA.QuitDTE(vDTE)
-
-    # def test_TriggerMultistring(self):
-    #     pass
+        with CopyContext('test_AddFileToProj2',bDeleteAfter=False):
+            with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
+                VSA.AddFileToProj(vProj,"HelloWorld2.cpp","obse")
+#                VSA.AddFileToProj(vProj,"HelloWorld3.cpp","obse")

@@ -1,5 +1,6 @@
 #-------Settings
 sVisualStudioDTE = "VisualStudio.DTE.15.0"
+bDebug = False
 #-------
 
 import ctypes
@@ -27,39 +28,62 @@ def ActivateMsgHandler():
 def Register():
     TM.RunPowerShellScript(os.path.join(os.getcwd(),'..','..','res','Register.ps1'))
 
+vActiveDTE = None
 #------Public
 #-VisualStudioDevTimeEnvironment
 class OpenDTE():
     def __enter__(self):
-        self.vDTE = self.InstantiateDTE()
-        return self.vDTE
+        self.bQuitDTE = False
+        global vActiveDTE
+        if vActiveDTE is None:
+            self.bQuitDTE = True
+            vActiveDTE = self.InstantiateDTE()
+        else:
+            raise Exception("There is already an active DTE.")
+        return vActiveDTE
     def __exit__(self, type, value, traceback):
-        self.QuitDTE(self.vDTE)
+        global vActiveDTE
+        if self.bQuitDTE:
+            self.QuitDTE(vActiveDTE)
+            vActiveDTE = None
+    @staticmethod
     def InstantiateDTE():
         global sVisualStudioDTE
         return win32com.client.Dispatch(sVisualStudioDTE)
+    @staticmethod
     def QuitDTE(vDTE):
         vDTE.Solution.Close()
         vDTE.Quit()
 
+#Remember, if you "with OpenProj(), OpenProj()", you'll get a rejection error because of mutlithreading.
 class OpenProj():
     def __init__(self,sProjPath,bSave=True,vDTE=None):
+        #-
         self.bSave = bSave
+        #-
+        if sProjPath == "":
+            raise ValueError('sProjPath is empty.')
         self.sProjPath = sProjPath
-        self.vDTE = vDTE
+        #-
         self.bQuitDTE = False
-    def __enter__(self):
-        if self.vDTE is None:
+        global vActiveDTE
+        if vActiveDTE is None:
             self.bQuitDTE = True
-            self.vDTE = OpenDTE.InstantiateDTE()
-        self.vProj = self.OpenProj(self.vDTE,self.sProjPath)
+            vActiveDTE = OpenDTE.InstantiateDTE()
+    def __enter__(self):
+        global vActiveDTE
+        self.vProj = self.OpenProj(vActiveDTE,self.sProjPath)
         return self.vProj
-    def __exit__(self, type, value, traceback):
-        if self.bSave:
-            self.vProj.Save()
-        if self.bQuitDTE:
-            OpenDTE.QuitDTE(self.vDTE)
-    def OpenProj(self,vDTE,sProjPath):
+    def __exit__(self, errtype, value, traceback):
+        global vActiveDTE
+        if not errtype:
+            if self.bSave:
+                self.vProj.Save()
+            if self.bQuitDTE:
+                OpenDTE.QuitDTE(vActiveDTE)
+                vActiveDTE = None
+    @staticmethod
+    def OpenProj(vDTE,sProjPath):
         #---Open
         sProjPath = os.path.abspath(sProjPath)
         #---Filter

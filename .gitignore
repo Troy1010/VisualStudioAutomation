@@ -4,7 +4,7 @@ Examples/
 
 
 **/tests/res/**
-!**/tests/res/*_Backup
+!**/tests/res/*Backup
 
 
 
