@@ -14,6 +14,7 @@ import win32com.client
 import time
 
 
+#@unittest.skip("Skipping DTE tests")
 class Test_VisualStudioAutomation(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -65,4 +66,4 @@ class Test_VisualStudioAutomation(unittest.TestCase):
         with TM.CopyContext('Examples_Backup',TM.FnName(),bPostDelete=False):
             with VS.OpenProj("HelloWorld.vcxproj") as vProj:
                 VS.AddFileToProj(vProj,"HelloWorld2.cpp","obse")
-#                VS.AddFileToProj(vProj,"HelloWorld3.cpp","obse")
+                VS.AddFileToProj(vProj,"HelloWorld3.cpp","obse")
