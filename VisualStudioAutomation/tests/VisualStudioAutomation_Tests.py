@@ -5,31 +5,13 @@ import shutil
 import sys
 import xml.etree.ElementTree
 
-import TM_CommonPy as TMC
-import TM_CommonPy.Narrator as TMC_NAR
+import TM_CommonPy as TM
+import TM_CommonPy.Narrator as TM_NAR
 import VisualStudioAutomation as VSA
 import subprocess, win32com
 
 import win32com.client
 import time
-
-class CopyContext:
-    def __init__(self,sFolder,sSource='Examples_Backup',bDeleteAfter=True,bCDInto=True):
-        if bCDInto and not os.path.isdir(sSource):
-            raise ValueError("bCDInto is true but sSource is not a directory:"+sSource)
-        self.bCDInto = bCDInto
-        self.bDeleteAfter = bDeleteAfter
-        self.sFolder = sFolder
-        self.sSource = sSource
-    def __enter__(self):
-        TMC.Copy(self.sSource,self.sFolder,bPreDelete=True)
-        if self.bCDInto:
-            os.chdir(self.sFolder)
-    def __exit__(self,errtype,value,traceback):
-        if self.bCDInto:
-            os.chdir('..')
-        if self.bDeleteAfter:
-            shutil.rmtree(self.sFolder)
 
 
 class Test_VisualStudioAutomation(unittest.TestCase):
@@ -48,39 +30,39 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             pass
 
     def test_OpenProj(self):
-        with CopyContext('test_OpenProj',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_OpenProj',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj",bSave=False) as vProj:
                 pass
 
     def test_AddFileToProj(self):
-        with CopyContext('test_AddFileToProj',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_AddFileToProj',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
                 VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
 
     def test_AddFileToProj_WithFilter(self):
-        with CopyContext('test_AddFileToProj_WithFilter',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_AddFileToProj_WithFilter',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
                 VSA.AddFileToProj(vProj,"HelloWorld3.cpp","Filter09")
 
     def test_FilterProjectItem(self):
-        with CopyContext('test_FilterProjectItem',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_FilterProjectItem',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
                 vProjItem = VSA.AddFileToProj(vProj,"HelloWorld3.cpp")
                 VSA.FilterProjectItem(vProjItem,"Filter45")
 
     def test_AddFilterToProj(self):
-        with CopyContext('test_AddFilterToProj',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_AddFilterToProj',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
                 VSA.AddFilterToProj(vProj,"Filter54")
 
     def test_AddProjRef(self):
-        with CopyContext('test_AddProjRef',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_AddProjRef',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
                 with VSA.OpenProj("HelloWorld2.vcxproj") as vProfToReference:
                     VSA.AddProjRef(vProj,vProfToReference)
 
     def test_AddFileToProj2(self):
-        with CopyContext('test_AddFileToProj2',bDeleteAfter=False):
+        with TM.CopyContext('Examples_Backup','test_AddFileToProj2',bPostDelete=False):
             with VSA.OpenProj("HelloWorld.vcxproj") as vProj:
                 VSA.AddFileToProj(vProj,"HelloWorld2.cpp","obse")
 #                VSA.AddFileToProj(vProj,"HelloWorld3.cpp","obse")

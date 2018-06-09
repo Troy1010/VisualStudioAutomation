@@ -12,8 +12,7 @@ import xml.etree.ElementTree
 import win32com.client
 import time
 
-#Remember to use () for all DTE methods. Instead of throwing an exception, they just fizzle.
-#MultithreadBugFix isn't complete, so be wary of that.
+#WARN!NG! Until MultithreadBugFix is complete, there is a race coniditon
 
 #---MultithreadBugFix
 #VisualStudio's DTE throws an error if multiple threads make requests to it.
@@ -77,6 +76,7 @@ class OpenProj():
     def __exit__(self, errtype, value, traceback):
         global vActiveDTE
         if not errtype:
+            time.sleep(.300) #helps prevent race condition of multithread bug
             if self.bSave:
                 self.vProj.Save()
             if self.bQuitDTE:
