@@ -11,6 +11,8 @@ import sys, os
 import xml.etree.ElementTree
 import win32com.client
 import time
+import VisualStudioAutomation.Narrator
+import VisualStudioAutomation.Integrator
 
 #WARN!NG! Until MultithreadBugFix is complete, there is a race coniditon
 
@@ -39,8 +41,10 @@ class OpenDTE():
             vActiveDTE = self.InstantiateDTE()
         else:
             raise Exception("There is already an active DTE.")
+        time.sleep(.500) #helps prevent race condition of multithread bug
         return vActiveDTE
     def __exit__(self, type, value, traceback):
+        time.sleep(.500) #helps prevent race condition of multithread bug
         global vActiveDTE
         if self.bQuitDTE:
             self.QuitDTE(vActiveDTE)
@@ -54,14 +58,9 @@ class OpenDTE():
         vDTE.Solution.Close()
         vDTE.Quit()
 
-#Remember, if you "with OpenProj(), OpenProj()", you'll get a rejection error because of mutlithreading.
 class OpenProj():
-    def __init__(self,sProjPath,bSave=True,vDTE=None):
-        #-
+    def __init__(self,sProjPath,bSave=True):
         self.bSave = bSave
-        #-
-        if sProjPath == "":
-            raise ValueError('sProjPath is empty.')
         self.sProjPath = sProjPath
         #-
         self.bQuitDTE = False
@@ -71,7 +70,8 @@ class OpenProj():
             vActiveDTE = OpenDTE.InstantiateDTE()
     def __enter__(self):
         global vActiveDTE
-        self.vProj = self.OpenProj(vActiveDTE,self.sProjPath)
+        self.vProj = self.OpenProj(self.sProjPath)
+        time.sleep(.500) #helps prevent race condition of multithread bug
         return self.vProj
     def __exit__(self, errtype, value, traceback):
         global vActiveDTE
@@ -83,14 +83,29 @@ class OpenProj():
                 OpenDTE.QuitDTE(vActiveDTE)
                 vActiveDTE = None
     @staticmethod
-    def OpenProj(vDTE,sProjPath):
+    def OpenProj(sProjPath):
         #---Open
         sProjPath = os.path.abspath(sProjPath)
         #---Filter
         if not os.path.isfile(sProjPath):
             raise Exception("sProjPath does not exist:"+sProjPath)
+        if vActiveDTE is None:
+            raise Exception("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
         #---
-        return vDTE.Solution.AddFromFile(sProjPath)
+        return vActiveDTE.Solution.AddFromFile(sProjPath)
+
+def OpenSolution(sSolution):
+    #---Open
+    sSolution = os.path.abspath(sSolution)
+    #---Filter
+    if not os.path.isfile(sSolution):
+        raise ValueError("sSolution does not exist:"+sSolution)
+    if vActiveDTE is None:
+        raise Exception("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
+    #---
+    vActiveDTE.Solution.Open(sSolution)
+    return vActiveDTE.Solution
+
 
 def AddFileToProj(vProj,sFileToAdd,sFilter=""):
     #---Open
