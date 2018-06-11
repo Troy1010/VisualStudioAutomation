@@ -13,7 +13,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 
 class Test_VSA_XML(TestCase):
-    sTestWorkspace = "TestWorkspace/"
+    sTestWorkspace = "TestWorkspace_XML/"
 
     @classmethod
     def setUpClass(self):
@@ -22,10 +22,10 @@ class Test_VSA_XML(TestCase):
 
     @classmethod
     def tearDownClass(self):
-        os.chdir(os.path.join('..','..'))
         global bPostDelete
         if bPostDelete:
             TM.Delete(self.sTestWorkspace)
+        os.chdir(os.path.join('..','..'))
 
     # ------Tests
 

@@ -13,11 +13,15 @@ import win32com.client, pywintypes
 import time
 import VisualStudioAutomation.Narrator
 from retrying import retry
+import win32process
+import psutil
 ##endregion
 ##region Notes
 #VisualStudio's DTE(DevelopTimeEnvironment) throws errors if it receives multiple requests.
 #To get around this issue, I've decorated functions that use the DTE with retry.
 ##endregion
+
+bDoOnce = False
 
 vActiveDTE = None
 #------Public
@@ -40,12 +44,39 @@ class OpenDTE():
     @retry(stop_max_delay=10000)
     def InstantiateDTE():
         global sVisualStudioDTE
-        return win32com.client.Dispatch(sVisualStudioDTE)
+        vDTE = win32com.client.Dispatch(sVisualStudioDTE)
+        if not hasattr(vDTE,"Name"):
+            raise Exception("Couldn't instantiate DTE")
+        return vDTE
     @staticmethod
     @retry(stop_max_delay=10000)
     def QuitDTE(vDTE):
+        #TM.MsgBox("vDTE.FullName:"+str(vDTE.FullName))
         vDTE.Solution.Close()
         vDTE.Quit()
+        PID = self.GetPID(vDTE)
+        fWaitDuration = -0.1
+        while psutil.pid_exists(PID):
+            fWaitDuration += 0.1
+            if fWaitDuration > 10:
+                break
+            time.sleep(0.1)
+        else:
+            raise ("Timed out while waiting for PID to close.")
+        # while True:
+        #     try:
+        #         sTemp = vDTE.Name
+        #     except:
+        #         #TM.MsgBox("NOT Waiting..")
+        #         break
+        #     else:
+        #         if not bDoOnce:
+        #             bDoOnce = True
+        #             TM.MsgBox("Waiting..")
+        #         print("Waiting..")
+    @staticmethod
+    def GetPID(vDTE):
+        return win32process.GetWindowThreadProcessId(vDTE.ActiveWindow.HWnd)[1]
 
 class OpenProj():
     def __init__(self,sProjPath,bSave=True):

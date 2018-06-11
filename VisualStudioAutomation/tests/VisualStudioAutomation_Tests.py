@@ -1,6 +1,6 @@
 ##region Settings
 bSkipSlowTests=False
-bPostDelete=True
+bPostDelete=False
 ##endregion
 import unittest
 from nose.tools import *
@@ -30,10 +30,10 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        os.chdir(os.path.join('..','..'))
         global bPostDelete
         if bPostDelete:
             TM.Delete(self.sTestWorkspace)
+        os.chdir(os.path.join('..','..'))
 
     # ------Tests
 
@@ -69,14 +69,17 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     def test_AddProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.OpenProj("HelloWorld.vcxproj") as vProj, VS.OpenProj("HelloWorld2.vcxproj") as vProjToReference:
-                VS.AddProjRef(vProj,vProjToReference)
+            with VS.OpenProj("HelloWorld.vcxproj") as vProj:
+                with VS.OpenProj("HelloWorld2.vcxproj") as vProjToReference:
+                    VS.AddProjRef(vProj,vProjToReference)
 
     def test_AddFileToProj2(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.OpenProj("HelloWorld.vcxproj") as vProj:
                 VS.AddFileToProj(vProj,"HelloWorld2.cpp","obse")
                 VS.AddFileToProj(vProj,"HelloWorld3.cpp","obse")
+            self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
+            self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
     def test_AddAndRemoveFileFromProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
