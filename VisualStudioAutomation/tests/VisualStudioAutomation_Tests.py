@@ -118,4 +118,3 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             with VS.OpenProj("HelloWorld.vcxproj") as vProj:
                 VS.RemoveFileFromProj(vProj,"HelloWorld2.cpp")
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
-        qwer
