@@ -1,59 +1,48 @@
-#-------Settings
+##region Settings
 sVisualStudioDTE = "VisualStudio.DTE.15.0"
 bDebug = False
-#-------
-
+##endregion
+##region Imports
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
 import TM_CommonPy.Narrator
 import sys, os
 import xml.etree.ElementTree
-import win32com.client
+import win32com.client, pywintypes
 import time
 import VisualStudioAutomation.Narrator
-import VisualStudioAutomation.Integrator
-
-#WARN!NG! Until MultithreadBugFix is complete, there is a race coniditon
-
-#---MultithreadBugFix
-#VisualStudio's DTE throws an error if multiple threads make requests to it.
-#With more work, these functions would reroute those errors so that the DTE is continually prompted until it's ready.
-
-#Nonfunctional
-def ActivateMsgHandler():
-    sScriptFile = os.path.join(os.getcwd(),'..','..','res','HookMultiThreadMessageHandler.ps1')
-    subprocess.Popen(["powershell.exe","-executionpolicy ","bypass","-file",sScriptFile], shell=True)
-
-#Nonfunctional
-def Register():
-    TM.RunPowerShellScript(os.path.join(os.getcwd(),'..','..','res','Register.ps1'))
+from retrying import retry
+##endregion
+##region Notes
+#VisualStudio's DTE(DevelopTimeEnvironment) throws errors if it receives multiple requests.
+#To get around this issue, I've decorated functions that use the DTE with retry.
+##endregion
 
 vActiveDTE = None
 #------Public
-#-VisualStudioDevTimeEnvironment
 class OpenDTE():
     def __enter__(self):
-        self.bQuitDTE = False
+        self.bInstantiatedDTE = False
         global vActiveDTE
         if vActiveDTE is None:
-            self.bQuitDTE = True
+            self.bInstantiatedDTE = True
             vActiveDTE = self.InstantiateDTE()
         else:
             raise Exception("There is already an active DTE.")
-        time.sleep(.500) #helps prevent race condition of multithread bug
         return vActiveDTE
     def __exit__(self, type, value, traceback):
-        time.sleep(.500) #helps prevent race condition of multithread bug
         global vActiveDTE
-        if self.bQuitDTE:
+        if self.bInstantiatedDTE:
             self.QuitDTE(vActiveDTE)
             vActiveDTE = None
     @staticmethod
+    @retry(stop_max_delay=10000)
     def InstantiateDTE():
         global sVisualStudioDTE
         return win32com.client.Dispatch(sVisualStudioDTE)
     @staticmethod
+    @retry(stop_max_delay=10000)
     def QuitDTE(vDTE):
         vDTE.Solution.Close()
         vDTE.Quit()
@@ -69,31 +58,30 @@ class OpenProj():
             self.bQuitDTE = True
             vActiveDTE = OpenDTE.InstantiateDTE()
     def __enter__(self):
-        global vActiveDTE
         self.vProj = self.OpenProj(self.sProjPath)
-        time.sleep(.500) #helps prevent race condition of multithread bug
         return self.vProj
     def __exit__(self, errtype, value, traceback):
         global vActiveDTE
         if not errtype:
-            time.sleep(.500) #helps prevent race condition of multithread bug
             if self.bSave:
                 self.vProj.Save()
             if self.bQuitDTE:
                 OpenDTE.QuitDTE(vActiveDTE)
                 vActiveDTE = None
     @staticmethod
+    @retry(stop_max_delay=10000)
     def OpenProj(sProjPath):
         #---Open
         sProjPath = os.path.abspath(sProjPath)
         #---Filter
         if not os.path.isfile(sProjPath):
-            raise Exception("sProjPath does not exist:"+sProjPath)
+            raise ValueError("sProjPath does not exist:"+sProjPath)
         if vActiveDTE is None:
             raise Exception("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
         #---
         return vActiveDTE.Solution.AddFromFile(sProjPath)
 
+@retry(stop_max_delay=10000)
 def OpenSolution(sSolution):
     #---Open
     sSolution = os.path.abspath(sSolution)
@@ -107,12 +95,15 @@ def OpenSolution(sSolution):
     return vActiveDTE.Solution
 
 
+@retry(stop_max_delay=10000)
 def AddFileToProj(vProj,sFileToAdd,sFilter=""):
     #---Open
     sFileToAdd = os.path.abspath(sFileToAdd)
     #---Filter
     if not os.path.isfile(sFileToAdd):
-        raise Exception("sFileToAdd does not exist:"+sFileToAdd)
+        raise ValueError("sFileToAdd does not exist:"+sFileToAdd)
+    if not str(type(vProj)) == "<class 'win32com.client.CDispatch'>":
+        raise ValueError("vProj is not the right type:"+str(type(vProj)))
     #---
     if sFilter == "":
         return vProj.ProjectItems.AddFromFile(sFileToAdd)
@@ -123,23 +114,38 @@ def AddFileToProj(vProj,sFileToAdd,sFilter=""):
             for i in range(1,vProj.Object.Filters.Count+1):
                 if vProj.Object.Filters.item(i).Name == sFilter:
                     vFilter = vProj.Object.Filters.item(i)
+                    break
         return vFilter.AddFile(sFileToAdd)
 
+@retry(stop_max_delay=10000)
+def RemoveFileFromProj(vProj,sFileToRemove,bTry=False):
+    #---Open
+    sFileToRemove = os.path.abspath(sFileToRemove)
+    #---
+    try:
+        vFile = vProj.Object.Files.Item(sFileToRemove)
+    except:
+        if not bTry:
+            raise Exception(TM.FnName()+"`Could not find file:"+sFileToRemove)
+#    try:
+    vProj.Object.RemoveFile(vFile)
+#    except:
+#        raise Exception(TM.FnName()+"`Could not remove file:"+sFileToRemove)
+
+@retry(stop_max_delay=10000)
 def AddFilterToProj(vProj,sFilterName):
     return vProj.Object.AddFilter(sFilterName)
 
+@retry(stop_max_delay=10000)
 def FilterProjectItem(vProjItem,sFilterName):
     vProj = vProjItem.ProjectItems.ContainingProject
     sFile = os.path.abspath(vProjItem.Name)
     vProj.Object.RemoveFile(vProjItem.Object)
     AddFileToProj(vProj,sFile,sFilterName)
 
+@retry(stop_max_delay=10000)
 def AddProjRef(vProj,vProjToReference):
     vProj.Object.AddProjectReference(vProjToReference)
-
-#Nonfunctional
-def ImportPropsToProj(vProj,sPropFile):
-    pass
 
 
 
@@ -150,18 +156,47 @@ def _ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile):
 #------Public
 
 ##region Convenience
-def SetTMDefaultSettings(sProj):
-    with TM.ElementTreeContext(sProj) as vTree:
-        ##region OutDir,IntDir
+class SetTMDefaultSettings:
+    @staticmethod
+    def Do(sProj):
+        with TM.ElementTreeContext(sProj) as vTree:
+            TM.AppendElemIfAbsent(*SetTMDefaultSettings._OutDir_ArgsForAppend(vTree))
+            TM.AppendElemIfAbsent(*SetTMDefaultSettings._IntDir_ArgsForAppend(vTree))
+    @staticmethod
+    def Undo(sProj):
+        with TM.ElementTreeContext(sProj) as vTree:
+            TM.RemoveElem(*SetTMDefaultSettings._OutDir_ArgsForAppend(vTree))
+            TM.RemoveElem(*SetTMDefaultSettings._IntDir_ArgsForAppend(vTree))
+
+    @staticmethod
+    def _OutDir_ArgsForAppend(vTree):
         vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
         vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
-        vElemToInsert1 = xml.etree.ElementTree.Element(r"OutDir") #<OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
-        vElemToInsert1.text = "$(SolutionDir)bin\$(Platform)\$(Configuration)\\"
-        vElemToInsert2 = xml.etree.ElementTree.Element(r"IntDir") #<IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
-        vElemToInsert2.text = "$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
-        TM.AppendIfAbsent(vElemToInsert1,vElemGlobals)
-        TM.AppendIfAbsent(vElemToInsert2,vElemGlobals)
-        ##endregion
+        vOutDirElem = xml.etree.ElementTree.Element(r"OutDir") #<OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+        vOutDirElem.text = r"$(SolutionDir)bin\$(Platform)\$(Configuration)\\"
+        return (vOutDirElem,vElemGlobals)
+
+    @staticmethod
+    def _IntDir_ArgsForAppend(vTree):
+        vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
+        vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
+        vIntDirElem = xml.etree.ElementTree.Element(r"IntDir") #<IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+        vIntDirElem.text = r"$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
+        return (vIntDirElem,vElemGlobals)
+
+
+# def SetTMDefaultSettings(sProj):
+#     with TM.ElementTreeContext(sProj) as vTree:
+#         ##region OutDir,IntDir
+#         vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
+#         vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
+#         vElemToInsert1 = xml.etree.ElementTree.Element(r"OutDir") #<OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+#         vElemToInsert1.text = "$(SolutionDir)bin\$(Platform)\$(Configuration)\\"
+#         vElemToInsert2 = xml.etree.ElementTree.Element(r"IntDir") #<IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
+#         vElemToInsert2.text = "$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
+#         TM.AppendIfAbsent(vElemToInsert1,vElemGlobals)
+#         TM.AppendIfAbsent(vElemToInsert2,vElemGlobals)
+#         ##endregion
 ##endregion
 
 def IntegrateProps(sConsumerProjFile,sPropsFile):
@@ -172,7 +207,6 @@ def IntegrateProps(sConsumerProjFile,sPropsFile):
         vElemToInsertAt = TM.FindElem(xml.etree.ElementTree.Element(r"ImportGroup", Label="ExtensionSettings"),vTree)
         #---Check if vToInsert already exists
         if not TM.FindElem(vToInsert,vElemToInsertAt) is None:
-            print ("HookBuildInfo|sConsumerProjFile already has the element we were going to insert")
             return
         #---Insert
         vElemToInsertAt.append(vToInsert)
@@ -184,7 +218,6 @@ def IntegrateProps_Undo(sConsumerProjFile,sPropsFile):
         vToRemove = TM.FindElem(_ElementFromGeneratedBuildInfoFile(sConsumerProjFile,sPropsFile),vToRemoveFrom)
         #---If not found, exit
         if vToRemove is None:
-            print ("HookBuildInfo|WARN|Could not find vToRemove")
             return
         #---remove vToRemove
         vToRemoveFrom.remove(vToRemove)

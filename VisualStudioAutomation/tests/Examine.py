@@ -7,11 +7,7 @@ import win32com.client
 import time
 import VisualStudioAutomation as VS
 
-with VS.OpenProj("res\\Examples\\HelloWorld.vcxproj") as vProj:
-    vProj.Properties[24].Value = "Beep"
-    vProp = vProj.Properties[24]
-#    vProp.Name = "BOOP"
-    vProp.Value = "Biip"
-    #vProj.Properties.add(5)
-    #vName.append("Beep")
-    TM.Narrator.Print(vProj.Properties,bIncludeProtected=True,bIncludePrivate=True,iRecursionThreshold=1)
+with TM.CopyContext("res/Examples_Backup","res/Examine"):
+    vCommandSet = VS.CommandSet()
+    vCommandSet.Que([IntegrateProps,IntegrateProps_Undo],["HelloWorld.vcxproj","conanbuildinfo.props"])
+    vCommandSet.Execute()

@@ -72,4 +72,8 @@ class Test_VSA_XML(TestCase):
 
     def test_SetTMDefaultSettings(self):
         with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
-            VS.SetTMDefaultSettings(os.path.join('HelloWorld','HelloWorld.vcxproj'))
+            self.assertFalse(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
+            VS.SetTMDefaultSettings.Do(os.path.join('HelloWorld','HelloWorld.vcxproj'))
+            self.assertTrue(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
+            VS.SetTMDefaultSettings.Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'))
+            self.assertFalse(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
