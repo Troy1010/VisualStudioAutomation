@@ -1,10 +1,8 @@
 # Specific to this project..
-Examples/
+**/TestWorkspace*
 
 
 
-**/tests/res/**
-!**/tests/res/*Backup
 
 
 

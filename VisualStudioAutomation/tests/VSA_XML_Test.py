@@ -1,3 +1,7 @@
+##region Settings
+bPostDelete=True
+##endregion
+
 from unittest import TestCase
 import os
 import subprocess
@@ -9,31 +13,38 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 
 class Test_VSA_XML(TestCase):
+    sTestWorkspace = "TestWorkspace/"
+
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','tests','res'))
+        os.chdir(os.path.join('VisualStudioAutomation','tests'))
+        TM.Delete(self.sTestWorkspace)
 
     @classmethod
     def tearDownClass(self):
-        os.chdir(os.path.join('..','..','..'))
+        os.chdir(os.path.join('..','..'))
+        global bPostDelete
+        if bPostDelete:
+            TM.Delete(self.sTestWorkspace)
 
-    #----Tests
+    # ------Tests
+
     def test_IntegrateProps(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
 
     def test_IntegrateProps_AndUndo_Try(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             VS.IntegrateProps_Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
 
     def test_IntegrateProps_AndUndo_TryOnXMLWithBOM(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.IntegrateProps('obse_plugin_example_RAW.vcxproj','conanbuildinfo.props')
             VS.IntegrateProps_Undo('obse_plugin_example_RAW.vcxproj','conanbuildinfo.props')
 
     def test__ElementFromGeneratedBuildInfoFile_ByExample(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             vElem = VS._ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             #------Assert
             self.assertTrue(len(vElem.attrib.values()) == 2)
@@ -42,7 +53,7 @@ class Test_VSA_XML(TestCase):
             self.assertTrue(vElem.attrib['Condition'] == os.path.join('Exists(\'..','conanbuildinfo.props\')'))
 
     def test_IntegrateProps_UseTwiceAndNoDupEntry(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
@@ -61,17 +72,16 @@ class Test_VSA_XML(TestCase):
                     break
             #------Assert
             self.assertTrue(bFound)
-            self.assertTrue(not iCount < 1)
-            self.assertTrue(not iCount > 1)
+            self.assertEqual(iCount,1)
 
     def test_IntegrateProps_Undo_OveruseProtocol_Try(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             VS.IntegrateProps_Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             VS.IntegrateProps_Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
 
     def test_SetTMDefaultSettings(self):
-        with TM.CopyContext("Examples_XML_Backup",TM.FnName(),bPostDelete=False):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
             VS.SetTMDefaultSettings.Do(os.path.join('HelloWorld','HelloWorld.vcxproj'))
             self.assertTrue(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))

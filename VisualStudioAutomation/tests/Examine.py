@@ -7,7 +7,7 @@ import win32com.client
 import time
 import VisualStudioAutomation as VS
 
-with TM.CopyContext("res/Examples_Backup","res/Examine"):
+#with TM.CopyContext("res/Examples_Backup","res/Examine"):
     vCommandSet = VS.CommandSet()
     vCommandSet.Que([IntegrateProps,IntegrateProps_Undo],["HelloWorld.vcxproj","conanbuildinfo.props"])
     vCommandSet.Execute()
