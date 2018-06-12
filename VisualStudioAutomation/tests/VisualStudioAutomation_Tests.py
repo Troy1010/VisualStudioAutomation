@@ -8,16 +8,8 @@ import os
 import shutil
 import sys
 import xml.etree.ElementTree
-
 import TM_CommonPy as TM
-import TM_CommonPy.Narrator as TM_NAR
 import VisualStudioAutomation as VS
-import subprocess, win32com
-
-import win32com.client
-import time
-import pywintypes
-from retrying import retry
 
 @unittest.skipIf(bSkipSlowTests,"SkipSlowTests Setting")
 class Test_VisualStudioAutomation(unittest.TestCase):

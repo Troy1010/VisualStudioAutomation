@@ -1,13 +1,15 @@
 ##region Settings
 sVisualStudioDTE = "VisualStudio.DTE.15.0"
-bDebug = False
+fClosePIDTimeout = 30
+bWriteLog = True
+bRetryAttribErrors = True
 ##endregion
 ##region Imports
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
 import TM_CommonPy.Narrator
-import sys, os
+import sys
 import xml.etree.ElementTree
 import win32com.client, pywintypes
 import time
@@ -15,15 +17,38 @@ import VisualStudioAutomation.Narrator
 from retrying import retry
 import win32process
 import psutil
+import logging, os
+##endregion
+##region Log init
+#VisualStudioAutomationLog
+VSALog = logging.getLogger('VisualStudioAutomation')
+if bWriteLog:
+    sLog = os.path.join(__file__,'..','VSALog.log')
+    TM.Delete(sLog)
+    VSALog.addHandler(logging.FileHandler(sLog))
 ##endregion
 ##region Notes
 #VisualStudio's DTE(DevelopTimeEnvironment) throws errors if it receives multiple requests.
 #To get around this issue, I've decorated functions that use the DTE with retry.
+#Call rejection errors can be easily retried, but AttributeErrors may or may not be a result of the multithread bug.
+#The global variable bRetryAttribErrors decides how such errors are handled
+##endregion
+##region Globals
+vActiveDTE = None
 ##endregion
 
-bDoOnce = False
-
-vActiveDTE = None
+def IsMutlithreadError(e):
+    if isinstance(e,pywintypes.com_error):
+        if hasattr(e,"hresult"):
+            if e.hresult == -2147418111: #Call was rejected by callee.
+                VSALog.debug("Retrying after \"Call was rejected\" error")
+                return True
+    if isinstance(e,AttributeError):
+        #Might be the mutlithread bug, might be a true attrib error.
+        VSALog.warn("Might be multithread bug; might be true attrib error")
+        global bRetryAttribErrors
+        return bRetryAttribErrors
+    return False
 #------Public
 class OpenDTE():
     def __enter__(self):
@@ -33,7 +58,7 @@ class OpenDTE():
             self.bInstantiatedDTE = True
             vActiveDTE = self.InstantiateDTE()
         else:
-            raise Exception("There is already an active DTE.")
+            raise RuntimeError("There is already an active DTE.")
         return vActiveDTE
     def __exit__(self, type, value, traceback):
         global vActiveDTE
@@ -41,42 +66,30 @@ class OpenDTE():
             self.QuitDTE(vActiveDTE)
             vActiveDTE = None
     @staticmethod
-    @retry(stop_max_delay=10000)
+    @retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
     def InstantiateDTE():
         global sVisualStudioDTE
-        vDTE = win32com.client.Dispatch(sVisualStudioDTE)
-        if not hasattr(vDTE,"Name"):
-            raise Exception("Couldn't instantiate DTE")
-        return vDTE
+        return win32com.client.Dispatch(sVisualStudioDTE)
     @staticmethod
-    @retry(stop_max_delay=10000)
+    @retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
     def QuitDTE(vDTE):
-        #TM.MsgBox("vDTE.FullName:"+str(vDTE.FullName))
         vDTE.Solution.Close()
+        PID = win32process.GetWindowThreadProcessId(vDTE.ActiveWindow.HWnd)[1] #Get PID after closing Solution for 2 reasons:   1)Call rejection is detectable by IsMutlithreadError regardless of bRetryAttribErrors  2)SolutionClose has to wait for GetPID, but not visaversa.
         vDTE.Quit()
-        PID = self.GetPID(vDTE)
-        fWaitDuration = -0.1
+        fTimer = fClosePIDTimeout
         while psutil.pid_exists(PID):
-            fWaitDuration += 0.1
-            if fWaitDuration > 10:
-                break
-            time.sleep(0.1)
-        else:
-            raise ("Timed out while waiting for PID to close.")
-        # while True:
-        #     try:
-        #         sTemp = vDTE.Name
-        #     except:
-        #         #TM.MsgBox("NOT Waiting..")
-        #         break
-        #     else:
-        #         if not bDoOnce:
-        #             bDoOnce = True
-        #             TM.MsgBox("Waiting..")
-        #         print("Waiting..")
-    @staticmethod
-    def GetPID(vDTE):
-        return win32process.GetWindowThreadProcessId(vDTE.ActiveWindow.HWnd)[1]
+            try:
+                vDTE.Solution.Close()
+            except:
+                pass
+            try:
+                vDTE.Quit()
+            except:
+                pass
+            fTimer -= 1
+            if fTimer < -1:
+                raise TimeoutError("Timed out while waiting for PID to close:"+str(PID))
+            time.sleep(1)
 
 class OpenProj():
     def __init__(self,sProjPath,bSave=True):
@@ -95,38 +108,43 @@ class OpenProj():
         global vActiveDTE
         if not errtype:
             if self.bSave:
-                self.vProj.Save()
+                SaveProj(self.vProj)
             if self.bQuitDTE:
                 OpenDTE.QuitDTE(vActiveDTE)
                 vActiveDTE = None
     @staticmethod
-    @retry(stop_max_delay=10000)
+    @retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
     def OpenProj(sProjPath):
         #---Open
         sProjPath = os.path.abspath(sProjPath)
         #---Filter
         if not os.path.isfile(sProjPath):
-            raise ValueError("sProjPath does not exist:"+sProjPath)
+            raise OSError(2, 'No such Project file', sProjPath)
         if vActiveDTE is None:
-            raise Exception("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
+            raise RuntimeError("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
         #---
         return vActiveDTE.Solution.AddFromFile(sProjPath)
 
-@retry(stop_max_delay=10000)
+
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
+def SaveProj(vProj):
+    vProj.Save()
+
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
 def OpenSolution(sSolution):
     #---Open
     sSolution = os.path.abspath(sSolution)
     #---Filter
     if not os.path.isfile(sSolution):
-        raise ValueError("sSolution does not exist:"+sSolution)
+        raise OSError(2, 'No such Solution file', sSolution)
     if vActiveDTE is None:
-        raise Exception("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
+        raise RuntimeError("vActiveDTE is None. Try using "+TM.FnName()+" within a context manager such as \"with OpenDTE():\"")
     #---
     vActiveDTE.Solution.Open(sSolution)
     return vActiveDTE.Solution
 
 
-@retry(stop_max_delay=10000)
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
 def AddFileToProj(vProj,sFileToAdd,sFilter=""):
     #---Open
     sFileToAdd = os.path.abspath(sFileToAdd)
@@ -148,7 +166,7 @@ def AddFileToProj(vProj,sFileToAdd,sFilter=""):
                     break
         return vFilter.AddFile(sFileToAdd)
 
-@retry(stop_max_delay=10000)
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
 def RemoveFileFromProj(vProj,sFileToRemove,bTry=False):
     #---Open
     sFileToRemove = os.path.abspath(sFileToRemove)
@@ -163,18 +181,18 @@ def RemoveFileFromProj(vProj,sFileToRemove,bTry=False):
 #    except:
 #        raise Exception(TM.FnName()+"`Could not remove file:"+sFileToRemove)
 
-@retry(stop_max_delay=10000)
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
 def AddFilterToProj(vProj,sFilterName):
     return vProj.Object.AddFilter(sFilterName)
 
-@retry(stop_max_delay=10000)
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
 def FilterProjectItem(vProjItem,sFilterName):
     vProj = vProjItem.ProjectItems.ContainingProject
     sFile = os.path.abspath(vProjItem.Name)
     vProj.Object.RemoveFile(vProjItem.Object)
     AddFileToProj(vProj,sFile,sFilterName)
 
-@retry(stop_max_delay=10000)
+@retry(retry_on_exception=IsMutlithreadError,stop_max_delay=10000)
 def AddProjRef(vProj,vProjToReference):
     vProj.Object.AddProjectReference(vProjToReference)
 
