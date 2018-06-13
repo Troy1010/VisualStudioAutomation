@@ -15,14 +15,26 @@ from retrying import retry
 import VisualStudioAutomation as VS
 ##endregion
 
-def IsMutlithreadError(e):
+def IsRetryableException(e):
     if isinstance(e,pywintypes.com_error):
         if hasattr(e,"hresult"):
             if e.hresult == -2147418111: #Call was rejected by callee.
-                VS.VSALog.debug("Retrying after \"Call was rejected\" error")
+                #VS.VSALog.debug("Retrying after \"Call was rejected\" error")
                 return True
     if isinstance(e,AttributeError):
         #Might be the mutlithread bug, might be a true attrib error.
-        #VS.VSALog.warn("Might be multithread bug; might be true attrib error")
-        return VS.bRetryAttribErrors
-    return True
+        if VS.bRetryAttribErrors:
+            return True
+        else:
+            VS.VSALog.debug("MaybeRetryableAttribError:"+TM.Narrator.Narrate(e))
+            try:
+                sOldMsg = e.args[0]
+            except AttributeError:
+                sOldMsg = "<CouldntExtractOldMsg>"
+            raise type(e)(
+                sOldMsg
+                +"\nMight be the mutlithread bug, might be a true attrib error."
+                +"\nUntil an effective \"Look before you leap\" strategy is developed for this issue,"
+                +"\nSetting bRetryAttribErrors=True is recommended. If the exception reoccurs, it is a true attrib error."
+                ) from e
+    return False

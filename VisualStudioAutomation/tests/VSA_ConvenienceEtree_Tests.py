@@ -1,4 +1,5 @@
 ##region Settings
+bSkip=False
 bPostDelete=True
 ##endregion
 
@@ -14,6 +15,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 from VisualStudioAutomation.ConvenienceEtree import _ElementFromGeneratedBuildInfoFile
 
+@unittest.skipIf(bSkip,"Skip Setting")
 class Test_VSA_XML(TestCase):
     sTestWorkspace = "TestWorkspace_XML/"
 
@@ -31,61 +33,71 @@ class Test_VSA_XML(TestCase):
 
     # ------Tests
 
-    def test_IntegrateProps(self):
+    def test_IntegrateProps_AndUndo(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
+            VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
+            self.assertTrue(TM.IsTextInFile('conanbuildinfo.props','HelloWorld.vcxproj'))
+            VS.IntegrateProps_Undo('HelloWorld.vcxproj','conanbuildinfo.props')
+            self.assertFalse(TM.IsTextInFile('conanbuildinfo.props','HelloWorld.vcxproj'))
 
-    def test_IntegrateProps_AndUndo_Try(self):
-        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            VS.IntegrateProps_Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-
-    def test_IntegrateProps_AndUndo_TryOnXMLWithBOM(self):
+    def test_IntegrateProps_AndUndo_OnFileWithBOM(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.IntegrateProps('obse_plugin_example_RAW.vcxproj','conanbuildinfo.props')
+            self.assertTrue(TM.IsTextInFile('conanbuildinfo.props','obse_plugin_example_RAW.vcxproj'))
             VS.IntegrateProps_Undo('obse_plugin_example_RAW.vcxproj','conanbuildinfo.props')
+            self.assertFalse(TM.IsTextInFile('conanbuildinfo.props','obse_plugin_example_RAW.vcxproj'))
 
     def test__ElementFromGeneratedBuildInfoFile_ByExample(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            vElem = _ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
+            vElem = _ElementFromGeneratedBuildInfoFile('HelloWorld.vcxproj','conanbuildinfo.props')
             #------Assert
             self.assertTrue(len(vElem.attrib.values()) == 2)
             self.assertTrue(vElem.tag == 'Import')
-            self.assertTrue(vElem.attrib['Project'] == os.path.join('..','conanbuildinfo.props'))
-            self.assertTrue(vElem.attrib['Condition'] == os.path.join('Exists(\'..','conanbuildinfo.props\')'))
+            self.assertTrue(vElem.attrib['Project'] == 'conanbuildinfo.props')
+            self.assertTrue(vElem.attrib['Condition'] == 'Exists(\'conanbuildinfo.props\')')
 
     def test_IntegrateProps_UseTwiceAndNoDupEntry(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            #---Make sure there is only 1 inserted element.
-            #-Open sConsumerProjFile
-            vTree = xml.etree.ElementTree.parse(os.path.join('HelloWorld','HelloWorld.vcxproj'))
-            #-
-            iCount = 0
-            vElemTemplateToSearchFor = _ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            for vItem in vTree.iter():
-                if 'ImportGroup' in vItem.tag and 'Label' in vItem.attrib and vItem.attrib['Label'] == "ExtensionSettings":
-                    bFound = True
-                    for vItem2 in vItem:
-                        if vElemTemplateToSearchFor.tag in vItem2.tag and vItem2.attrib == vElemTemplateToSearchFor.attrib:
-                            iCount += 1
-                    break
-            #------Assert
-            self.assertTrue(bFound)
+            VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
+            VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
+            VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
+            #---Make sure there is 1 inserted element.
+            with TM.ElementTreeContext('HelloWorld.vcxproj') as vTree:
+                iCount = 0
+                vElemTemplateToSearchFor = _ElementFromGeneratedBuildInfoFile('HelloWorld.vcxproj','conanbuildinfo.props')
+                for vItem in vTree.iter():
+                    if 'ImportGroup' in vItem.tag and 'Label' in vItem.attrib and vItem.attrib['Label'] == "ExtensionSettings":
+                        bFoundParent = True
+                        for vItem2 in vItem:
+                            if vElemTemplateToSearchFor.tag in vItem2.tag and vItem2.attrib == vElemTemplateToSearchFor.attrib:
+                                iCount += 1
+                        break
+            self.assertTrue(bFoundParent)
             self.assertEqual(iCount,1)
 
     def test_IntegrateProps_Undo_OveruseProtocol_Try(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            VS.IntegrateProps(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            VS.IntegrateProps_Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
-            VS.IntegrateProps_Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
+            VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
+            VS.IntegrateProps_Undo('HelloWorld.vcxproj','conanbuildinfo.props')
+            VS.IntegrateProps_Undo('HelloWorld.vcxproj','conanbuildinfo.props')
+            #---Make sure there are 0 inserted elements.
+            with TM.ElementTreeContext('HelloWorld.vcxproj') as vTree:
+                iCount = 0
+                vElemTemplateToSearchFor = _ElementFromGeneratedBuildInfoFile('HelloWorld.vcxproj','conanbuildinfo.props')
+                for vItem in vTree.iter():
+                    if 'ImportGroup' in vItem.tag and 'Label' in vItem.attrib and vItem.attrib['Label'] == "ExtensionSettings":
+                        bFoundParent = True
+                        for vItem2 in vItem:
+                            if vElemTemplateToSearchFor.tag in vItem2.tag and vItem2.attrib == vElemTemplateToSearchFor.attrib:
+                                iCount += 1
+                        break
+            self.assertTrue(bFoundParent)
+            self.assertEqual(iCount,0)
 
-    def test_SetTMDefaultSettings(self):
+    def test_SetTMDefaultVSSettings(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            self.assertFalse(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
-            VS.SetTMDefaultSettings.Do(os.path.join('HelloWorld','HelloWorld.vcxproj'))
-            self.assertTrue(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
-            VS.SetTMDefaultSettings.Undo(os.path.join('HelloWorld','HelloWorld.vcxproj'))
-            self.assertFalse(TM.IsTextInFile("OutDir",os.path.join('HelloWorld','HelloWorld.vcxproj')))
+            self.assertFalse(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))
+            VS.SetTMDefaultVSSettings.Do('HelloWorld.vcxproj')
+            self.assertTrue(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))
+            VS.SetTMDefaultVSSettings.Undo('HelloWorld.vcxproj')
+            self.assertFalse(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))

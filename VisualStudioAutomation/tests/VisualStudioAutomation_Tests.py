@@ -1,6 +1,6 @@
 ##region Settings
-bSkipSlowTests=False
-bPostDelete=False
+bSkip=False
+bPostDelete=True
 ##endregion
 import unittest
 from nose.tools import *
@@ -12,7 +12,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 import time
 
-@unittest.skipIf(bSkipSlowTests,"SkipSlowTests Setting")
+@unittest.skipIf(bSkip,"Skip Setting")
 class Test_VisualStudioAutomation(unittest.TestCase):
     sTestWorkspace = "TestWorkspace/"
 
@@ -30,36 +30,25 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     # ------Tests
 
-    def test_InstantiateAndQuitDTE(self):
-        with VS.DTEWrapper() as vDTEWrapper:
-            pass
-
-    def test_OpenProj(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                pass
-
     def test_AddFileToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld3.cpp")
-
-    def test_AddFileToProj_WithFilter(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                vProjWrapper.AddFile("HelloWorld3.cpp","Filter09")
+            self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
     def test_AddFilterToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFilter("Filter54")
+            self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
+            self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
 
     def test_AddProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
                 vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
 
-    def test_AddFileToProj2(self):
+    def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld2.cpp","obse")
@@ -71,8 +60,10 @@ class Test_VisualStudioAutomation(unittest.TestCase):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                vProjWrapper.AddFile("HelloWorld2.cpp","obse")
+                vProjWrapper.AddFile("HelloWorld2.cpp","Filter67")
             self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
+            self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
+            self.assertTrue(TM.IsTextInFile("Filter67","HelloWorld.vcxproj.filters"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.RemoveFile("HelloWorld2.cpp")
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
@@ -80,22 +71,20 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     def test_AddAndRemoveFileFromProj2(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
-                self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
-                with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                    vProjWrapper.AddFile("HelloWorld2.cpp","obse")
-                self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
-                with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                    vProjWrapper.RemoveFile("HelloWorld2.cpp")
-                self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
-
-    def test_AddAndRemoveFileFromProj3(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                     self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
-                    vProjWrapper.AddFile("HelloWorld2.cpp","obse")
+                    vProjWrapper.AddFile("HelloWorld2.cpp","Filter45")
                     vProjWrapper.Save()
                     self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
+                    self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
+                    self.assertTrue(TM.IsTextInFile("Filter45","HelloWorld.vcxproj.filters"))
                     vProjWrapper.RemoveFile("HelloWorld2.cpp")
                     vProjWrapper.Save()
                     self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
+
+    def test_AddFile_FileDoesntExist(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with self.assertRaises(FileNotFoundError):
+                    with vDTEWrapper.OpenProj("ZZZZZZZZZHelloWorld.vcxproj") as vProjWrapper:
+                        pass

@@ -36,7 +36,7 @@ class DTEWrapper():
     def OpenProj(self, *args, **kwargs):
         return ProjWrapper(self, *args, **kwargs)
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def OpenSolution(self,sSolution):
         #---Open
         sSolution = os.path.abspath(sSolution)
@@ -48,25 +48,31 @@ class DTEWrapper():
         return self.vDTE.Solution
 
     ##region Private
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _InstantiateDTE(self):
         return win32com.client.Dispatch(VS.sVisualStudioDTE)
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _QuitDTE(self):
         self.vDTE.Solution.Close()
-        iPID = win32process.GetWindowThreadProcessId(self.vDTE.ActiveWindow.HWnd)[1] #Get PID after closing Solution for 2 reasons:   1)Call rejection is immediately detectable by IsMutlithreadError  2)SolutionClose has to wait for GetPID, but not visaversa.
+        iPID = win32process.GetWindowThreadProcessId(self.vDTE.ActiveWindow.HWnd)[1] #GetPID after Solution.Close() because Solution.Close() has to wait for GetPID, but not visaversa.
         self.vDTE.Quit()
         fTimer = VS.fClosePIDTimeout
         while psutil.pid_exists(iPID):
             try:
                 self.vDTE.Solution.Close()
-            except:
-                pass
+            except Exception as e:
+                if e.hresult == -2147417848: #The object invoked has disconnected from its clients.
+                    pass
+                else:
+                    raise
             try:
                 self.vDTE.Quit()
-            except:
-                pass
+            except Exception as e:
+                if e.hresult == -2147417848: #The object invoked has disconnected from its clients.
+                    pass
+                else:
+                    raise
             if fTimer < 0:
                 raise TimeoutError("Timed out while waiting for PID to close:"+str(iPID))
             fTimer -= 1

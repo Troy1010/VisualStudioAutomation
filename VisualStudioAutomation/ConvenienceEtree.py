@@ -20,20 +20,20 @@ def _ElementFromGeneratedBuildInfoFile(sProjFile,sPropsFile):
     return xml.etree.ElementTree.Element(r"Import", Project=sRelPath, Condition=r"Exists('"+sRelPath+r"')")
 ##endregion
 
-class SetTMDefaultSettings:
-    @staticmethod
-    def Do(sProj):
+class SetTMDefaultVSSettings:
+    @classmethod
+    def Do(myClass,sProj):
         with TM.ElementTreeContext(sProj) as vTree:
-            TM.AppendElemIfAbsent(*SetTMDefaultSettings._OutDir_ArgsForAppendRemove(vTree))
-            TM.AppendElemIfAbsent(*SetTMDefaultSettings._IntDir_ArgsForAppendRemove(vTree))
-    @staticmethod
-    def Undo(sProj):
+            TM.AppendElemIfAbsent(*myClass._OutDir_ForBothDoAndUndo(vTree))
+            TM.AppendElemIfAbsent(*myClass._IntDir_ForBothDoAndUndo(vTree))
+    @classmethod
+    def Undo(myClass,sProj):
         with TM.ElementTreeContext(sProj) as vTree:
-            TM.RemoveElem(*SetTMDefaultSettings._OutDir_ArgsForAppendRemove(vTree))
-            TM.RemoveElem(*SetTMDefaultSettings._IntDir_ArgsForAppendRemove(vTree))
+            TM.RemoveElem(*myClass._OutDir_ForBothDoAndUndo(vTree))
+            TM.RemoveElem(*myClass._IntDir_ForBothDoAndUndo(vTree))
 
     @staticmethod
-    def _OutDir_ArgsForAppendRemove(vTree):
+    def _OutDir_ForBothDoAndUndo(vTree):
         vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
         vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
         vOutDirElem = xml.etree.ElementTree.Element(r"OutDir") #<OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
@@ -41,7 +41,7 @@ class SetTMDefaultSettings:
         return (vOutDirElem,vElemGlobals)
 
     @staticmethod
-    def _IntDir_ArgsForAppendRemove(vTree):
+    def _IntDir_ForBothDoAndUndo(vTree):
         vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
         vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
         vIntDirElem = xml.etree.ElementTree.Element(r"IntDir") #<IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
@@ -51,9 +51,7 @@ class SetTMDefaultSettings:
 
 def IntegrateProps(sProjFile,sPropsFile):
     with TM.ElementTreeContext(sProjFile) as vTree:
-        #---define vToInsert. example: <Import Project="..\packages\OBSEPluginDevPackage.1.0.1\build\native\OBSEPluginDevPackage.targets" Condition="Exists('..\packages\OBSEPluginDevPackage.1.0.1\build\native\OBSEPluginDevPackage.targets')" />
         vToInsert = _ElementFromGeneratedBuildInfoFile(sProjFile,sPropsFile)
-        #---Find position of vElementToInsertAt
         vElemToInsertAt = TM.FindElem(xml.etree.ElementTree.Element(r"ImportGroup", Label="ExtensionSettings"),vTree)
         #---Check if vToInsert already exists
         if not TM.FindElem(vToInsert,vElemToInsertAt) is None:

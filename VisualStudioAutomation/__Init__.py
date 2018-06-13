@@ -7,11 +7,11 @@ bRetryAttribErrors = True
 
 
 import TM_CommonPy as TM
-from VisualStudioAutomation.Global import IsMutlithreadError
+from VisualStudioAutomation.Global import IsRetryableException
 from VisualStudioAutomation.DTEWrapper import DTEWrapper
 from VisualStudioAutomation.ConvenienceEtree import IntegrateProps
 from VisualStudioAutomation.ConvenienceEtree import IntegrateProps_Undo
-from VisualStudioAutomation.ConvenienceEtree import SetTMDefaultSettings
+from VisualStudioAutomation.ConvenienceEtree import SetTMDefaultVSSettings
 import logging, os
 import TM_CommonPy as TM
 

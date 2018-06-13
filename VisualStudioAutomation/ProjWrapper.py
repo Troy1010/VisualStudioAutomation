@@ -36,13 +36,13 @@ class ProjWrapper():
             self._RetryClose()
             self.vProj = None
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def AddFile(self,sFileToAdd,sFilter=""):
         #---Open
         sFileToAdd = os.path.abspath(sFileToAdd)
         #---Filter
         if not os.path.isfile(sFileToAdd):
-            raise ValueError("sFileToAdd does not exist:"+sFileToAdd)
+            raise OSError(2, 'No such sFileToAdd', sFileToAdd)
         #---
         if sFilter == "":
             return self.vProj.ProjectItems.AddFromFile(sFileToAdd)
@@ -56,42 +56,55 @@ class ProjWrapper():
                         break
             return vFilter.AddFile(sFileToAdd)
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
-    def RemoveFile(self,sFileToRemove,bTry=False):
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
+    def RemoveFile(self,sFileToRemove,bTry=True):
         #---Open
         sFileToRemove = os.path.abspath(sFileToRemove)
+        #---Filter
+        #The DTE raises useless exceptions, so we must look before we leap.
+        if not os.path.isfile(sFileToRemove):
+            if bTry:
+                return
+            else:
+                raise OSError(2, 'No such sFileToRemove', sFileToRemove)
         #---
         try:
             vFile = self.vProj.Object.Files.Item(sFileToRemove)
-        except:
-            if not bTry:
-                raise Exception(TM.FnName()+"`Could not find file:"+sFileToRemove)
+        except Exception as e:
+            if VS.IsRetryableException(e):
+                raise
+            else:
+                s = "Could not retrieve vFile with sFileToRemove:"+sFileToRemove
+                if not bTry:
+                    s += "\nYou might be trying to remove a file that doesn't exist in the project."
+                    s += "\nTry passing bTry=True a parameter to RemoveFile."
+                raise type(e)(s) from e
         self.vProj.Object.RemoveFile(vFile)
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def AddFilter(self,sFilterName):
         return self.vProj.Object.AddFilter(sFilterName)
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def AddProjRef(self,vProjToReference):
         self.vProj.Object.AddProjectReference(vProjToReference)
 
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def Save(self):
         self.vProj.Save()
 
     ##region Private
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _RetryOpenProj(self,sProjFile):
         #---Open
         sProjFile = os.path.abspath(sProjFile)
         #---Filter
+        #The DTE raises useless exceptions, so we must look before we leap.
         if not os.path.isfile(sProjFile):
             raise OSError(2, 'No such Project file', sProjFile)
         #---
         return self.vParentDTEWrapper.vDTE.Solution.AddFromFile(sProjFile)
-
-    @retry(retry_on_exception=VS.IsMutlithreadError,stop_max_delay=10000)
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _RetryClose(self):
         self.vParentDTEWrapper.vDTE.Solution.Remove(self.vProj)
     ##endregion
