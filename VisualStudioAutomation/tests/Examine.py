@@ -11,6 +11,9 @@ import psutil
 import time
 import logging
 
+bNeverDeclared = None
+if not bNeverDeclared:
+    print("Wow")
 
 
 #logging.basicConfig(filename='C:\TMinus1010_Local\Coding\Python\VisualStudioAutomation\VisualStudioAutomation\example.log',level=logging.DEtBUG)

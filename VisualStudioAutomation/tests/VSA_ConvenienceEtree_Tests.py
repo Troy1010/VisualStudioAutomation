@@ -8,9 +8,11 @@ import subprocess
 import shutil
 import xml
 from pprint import pprint
+import unittest
 
 import TM_CommonPy as TM
 import VisualStudioAutomation as VS
+from VisualStudioAutomation.ConvenienceEtree import _ElementFromGeneratedBuildInfoFile
 
 class Test_VSA_XML(TestCase):
     sTestWorkspace = "TestWorkspace_XML/"
@@ -45,7 +47,7 @@ class Test_VSA_XML(TestCase):
 
     def test__ElementFromGeneratedBuildInfoFile_ByExample(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            vElem = VS._ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
+            vElem = _ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             #------Assert
             self.assertTrue(len(vElem.attrib.values()) == 2)
             self.assertTrue(vElem.tag == 'Import')
@@ -62,7 +64,7 @@ class Test_VSA_XML(TestCase):
             vTree = xml.etree.ElementTree.parse(os.path.join('HelloWorld','HelloWorld.vcxproj'))
             #-
             iCount = 0
-            vElemTemplateToSearchFor = VS._ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
+            vElemTemplateToSearchFor = _ElementFromGeneratedBuildInfoFile(os.path.join('HelloWorld','HelloWorld.vcxproj'),'conanbuildinfo.props')
             for vItem in vTree.iter():
                 if 'ImportGroup' in vItem.tag and 'Label' in vItem.attrib and vItem.attrib['Label'] == "ExtensionSettings":
                     bFound = True

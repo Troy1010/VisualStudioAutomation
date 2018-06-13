@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='VisualStudioAutomation'
-    ,version='0.1'
+    ,version='0.2'
     ,description=r'Convenience functions for writing Visual Studio macros'
     ,author='Troy1010'
     #,author_email=''
