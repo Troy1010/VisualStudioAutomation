@@ -1,6 +1,6 @@
 ##region Settings
 bSkip=False
-bPostDelete=True
+bPostDelete=False
 ##endregion
 import unittest
 from nose.tools import *

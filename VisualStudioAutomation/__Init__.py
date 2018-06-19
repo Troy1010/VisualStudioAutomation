@@ -6,14 +6,16 @@ bRetryAttribErrors = True
 ##endregion
 
 
-##region Log init
-#VisualStudioAutomationLog
+##region LogInit
 import logging, os
-VSALog = logging.getLogger('VisualStudioAutomation')
+sLogFile = os.path.join(__file__,'..','VSALog.log')
+VSALog = logging.getLogger(__name__)
+VSALog.setLevel(logging.DEBUG)
+try:
+    os.remove(sLogFile)
+except (PermissionError,FileNotFoundError):
+    pass
 if bWriteLog:
-    sLogFile = os.path.join(__file__,'..','VSALog.log')
-    if os.path.exists(sLogFile):
-        os.remove(sLogFile)
     VSALog.addHandler(logging.FileHandler(sLogFile))
 ##endregion
 import TM_CommonPy as TM
