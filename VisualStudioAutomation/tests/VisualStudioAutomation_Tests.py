@@ -10,6 +10,7 @@ import sys
 import xml.etree.ElementTree
 import TM_CommonPy as TM
 import VisualStudioAutomation as VS
+from VisualStudioAutomation import VSALog
 import time
 
 @unittest.skipIf(bSkip,"Skip Setting")
@@ -43,10 +44,16 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
             self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
 
-    def test_AddProjRef(self):
+    def test_AddAndRemoveProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
+                self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
                 vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
+                vProjWrapper.Save()
+                self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.RemoveProjRef(vProjToReferenceWrapper.vProj)
+                vProjWrapper.Save()
+                self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
 
     def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
