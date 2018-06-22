@@ -21,6 +21,8 @@ def IsRetryableException(e):
             if e.hresult == -2147418111: #Call was rejected by callee.
                 #VS.VSALog.debug("Retrying after \"Call was rejected\" error")
                 return True
+            elif e.hresult == -2147023170: #The remote procedure call failed.
+                return True
     if isinstance(e,AttributeError):
         #Might be the mutlithread bug, might be a true attrib error.
         if VS.bRetryAttribErrors:
