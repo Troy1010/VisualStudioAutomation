@@ -10,42 +10,38 @@ import win32process
 import psutil
 import time
 import logging
-
-bNeverDeclared = None
-if not bNeverDeclared:
-    print("Wow")
+import retrying
+from retrying import retry
 
 
-#logging.basicConfig(filename='C:\TMinus1010_Local\Coding\Python\VisualStudioAutomation\VisualStudioAutomation\example.log',level=logging.DEtBUG)
-#logging.debug("hi")
 
+@retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
+def examine_AddAndRemoveProjRef():
+    sTestWorkspace = "TestWorkspace/"
+    with TM.CopyContext("res/Examples_Backup",sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
+            TM.Narrator.Print(vProjWrapper.vProj.Object.References)
+            vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
+            vProjWrapper.Save()
+            print("`")
+            TM.Narrator.Print(vProjWrapper.vProj.Object.References)
+            print("`")
+            cToRemove = []
+            for vItem in vProjWrapper.vProj.Object.References:
+                print(vItem.Name)
+                if vItem.Name == vProjToReferenceWrapper.vProj.Name:
+                    print("Match")
+                    cToRemove.append(vItem)
+                    #vItem.Remove()
+                    #vRefToRemove = vItem
+            #vRefToRemove.Remove()
+            for vItem in cToRemove:
+                vItem.Remove()
+            print("````")
+            TM.Narrator.Print(vProjWrapper.vProj.Object.References)
+            #vProjWrapper.RemoveProjRef()
 
-# fWaitDuration = -0.1
-# while True: #psutil.pid_exists(PID):
-#     fWaitDuration += 0.1
-#     if fWaitDuration > 60:
-#         raise Exception("Timed out while waiting for PID to close.")
-#     time.sleep(0.1)
+            #vProjWrapper.RemoveProjRef(vProjToReferenceWrapper.vProj)
+            #vProjWrapper.Save()
 
-
-# with TM.CopyContext("res/Examples_Backup","res/Examine"):
-#     print(os.popen("tasklist").readlines())
-#     print("++++++++++++++++++++++")
-#     with VS.OpenDTE() as vDTE:
-#         print(os.popen("tasklist").readlines())
-# #         #TM.Narrator.Print(vDTE.ActiveWindow,iRecursionThreshold=4)
-# #         TM.Narrator.Print(vDTE.Debugger.LocalProcesses,iRecursionThreshold=2)
-# #         #vDTE.GetObject("Debugger")
-#         cPIDs = win32process.GetWindowThreadProcessId(vDTE.ActiveWindow.HWnd)
-#         print(str(cPIDs))
-# #
-# #         if psutil.pid_exists(cPIDs[1]):
-# #             print("EXISTS:"+str(cPIDs[1]))
-# #         else:
-# #             print("Does not exist")
-# #         #vDTE.Windows.CreateToolWindow()
-#     while psutil.pid_exists(cPIDs[1]):
-#         print("waiting..")
-#         time.sleep(0.1)
-#     print("DONE WAITING!")
-# # #Debug.ListProcesses
+examine_AddAndRemoveProjRef()
