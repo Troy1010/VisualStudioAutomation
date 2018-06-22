@@ -1,9 +1,7 @@
-##region Reminders
-#Filters could be exception handlers
-##endregion
 ##region Imports
 from VisualStudioAutomation.ProjWrapper import ProjWrapper
 import VisualStudioAutomation as VS
+from VisualStudioAutomation import VSALog
 #---Non-Local
 import ctypes
 from pprint import pprint
