@@ -54,6 +54,12 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.RemoveProjRef(vProjToReferenceWrapper.vProj)
                 vProjWrapper.Save()
                 self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
+                vProjWrapper.Save()
+                self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
+                vProjWrapper.Save()
+                self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
 
     def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
