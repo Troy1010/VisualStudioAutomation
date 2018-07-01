@@ -3,6 +3,7 @@
 ##endregion
 ##region Imports
 import VisualStudioAutomation as VS
+from VisualStudioAutomation import VSALog
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
@@ -20,10 +21,11 @@ import logging, os
 
 class ProjWrapper():
     vProj = None
-    def __init__(self,vParentDTEWrapper,sProjFile,bSave=True):
+    def __init__(self,vParentDTEWrapper,sProjFile,bSave=True,bRemove=False):
         self.vParentDTEWrapper = vParentDTEWrapper
         self.sProjFile = sProjFile
         self.bSave = bSave
+        self.bRemove = bRemove
         self.vProj = self._RetryOpenProj(sProjFile)
     def __enter__(self):
         return self
@@ -33,7 +35,8 @@ class ProjWrapper():
         if not self.vProj is None:
             if self.bSave and hasattr(self.vProj,"Save"):
                 self.Save()
-            self._RetryClose()
+            #if self.bRemove:
+            #    self.Remove()
             self.vProj = None
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
@@ -87,11 +90,34 @@ class ProjWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def AddProjRef(self,vProjToReference):
+        for vItem in self.vProj.Object.References:
+            if vItem.Name == vProjToReference.Name:
+                VSALog.debug("Project reference("+vProjToReference.Name+") already exists.")
+                return
         self.vProj.Object.AddProjectReference(vProjToReference)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
+    def RemoveProjRef(self,vProjToUnreference):
+        cToRemove = []
+        for vItem in self.vProj.Object.References:
+            if vItem.Name == vProjToUnreference.Name:
+                cToRemove.append(vItem)
+        for vItem in cToRemove:
+            vItem.Remove()
+
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def Save(self):
+        #TM.Narrator.Print(VSALog)
+        #global VSALog
+        print("Going to log msg..")
+        VSALog.debug("Saving project..")
+        print("log msg complete.")
+        #VSALog.debug("Saving project:"+self.vProj.Name)
         self.vProj.Save()
+
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
+    def Remove(self):
+        self.vParentDTEWrapper.vDTE.Solution.Remove(self.vProj)
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
@@ -104,7 +130,4 @@ class ProjWrapper():
             raise OSError(2, 'No such Project file', sProjFile)
         #---
         return self.vParentDTEWrapper.vDTE.Solution.AddFromFile(sProjFile)
-    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def _RetryClose(self):
-        self.vParentDTEWrapper.vDTE.Solution.Remove(self.vProj)
     ##endregion
