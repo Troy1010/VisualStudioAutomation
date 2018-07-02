@@ -1,7 +1,7 @@
 ##region Imports
 from VisualStudioAutomation.ProjWrapper import ProjWrapper
 import VisualStudioAutomation as VS
-from VisualStudioAutomation import VSALog
+from VisualStudioAutomation._Logger import VSALog
 #---Non-Local
 import ctypes
 from pprint import pprint

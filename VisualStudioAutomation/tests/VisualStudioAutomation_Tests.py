@@ -10,7 +10,6 @@ import sys
 import xml.etree.ElementTree
 import TM_CommonPy as TM
 import VisualStudioAutomation as VS
-from VisualStudioAutomation import VSALog
 import time
 
 @unittest.skipIf(bSkip,"Skip Setting")

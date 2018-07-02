@@ -3,7 +3,7 @@
 ##endregion
 ##region Imports
 import VisualStudioAutomation as VS
-from VisualStudioAutomation import VSALog
+from VisualStudioAutomation._Logger import VSALog
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
@@ -107,12 +107,7 @@ class ProjWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def Save(self):
-        #TM.Narrator.Print(VSALog)
-        #global VSALog
-        print("Going to log msg..")
         VSALog.debug("Saving project..")
-        print("log msg complete.")
-        #VSALog.debug("Saving project:"+self.vProj.Name)
         self.vProj.Save()
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

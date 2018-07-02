@@ -13,13 +13,14 @@ import psutil
 import logging, os
 from retrying import retry
 import VisualStudioAutomation as VS
+from VisualStudioAutomation._Logger import VSALog
 ##endregion
 
 def IsRetryableException(e):
     if isinstance(e,pywintypes.com_error):
         if hasattr(e,"hresult"):
             if e.hresult == -2147418111: #Call was rejected by callee.
-                #VS.VSALog.debug("Retrying after \"Call was rejected\" error")
+                #VSALog.debug("Retrying after \"Call was rejected\" error")
                 return True
             elif e.hresult == -2147023170: #The remote procedure call failed.
                 return True
@@ -28,7 +29,7 @@ def IsRetryableException(e):
         if VS.bRetryAttribErrors:
             return True
         else:
-            VS.VSALog.debug("MaybeRetryableAttribError:"+TM.Narrator.Narrate(e))
+            VSALog.debug("MaybeRetryableAttribError:"+TM.Narrator.Narrate(e))
             try:
                 sOldMsg = e.args[0]
             except AttributeError:
