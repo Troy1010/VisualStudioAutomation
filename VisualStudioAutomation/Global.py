@@ -2,12 +2,10 @@
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
-import TM_CommonPy.Narrator
 import sys
 import xml.etree.ElementTree
 import win32com.client, pywintypes
 import time
-import VisualStudioAutomation.Narrator
 import win32process
 import psutil
 import logging, os
@@ -29,7 +27,7 @@ def IsRetryableException(e):
         if VS.bRetryAttribErrors:
             return True
         else:
-            VSALog.debug("MaybeRetryableAttribError:"+TM.Narrator.Narrate(e))
+            VSALog.debug("MaybeRetryableAttribError:"+TM.Narrate(e))
             try:
                 sOldMsg = e.args[0]
             except AttributeError:

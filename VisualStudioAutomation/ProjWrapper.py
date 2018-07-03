@@ -7,7 +7,6 @@ from VisualStudioAutomation._Logger import VSALog
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
-import TM_CommonPy.Narrator
 import sys
 import xml.etree.ElementTree
 import win32com.client, pywintypes
@@ -35,8 +34,8 @@ class ProjWrapper():
         if not self.vProj is None:
             if self.bSave and hasattr(self.vProj,"Save"):
                 self.Save()
-            #if self.bRemove:
-            #    self.Remove()
+            if self.bRemove:
+                self.Remove()
             self.vProj = None
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

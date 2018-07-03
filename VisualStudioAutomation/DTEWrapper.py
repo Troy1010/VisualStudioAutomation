@@ -6,12 +6,10 @@ from VisualStudioAutomation._Logger import VSALog
 import ctypes
 from pprint import pprint
 import TM_CommonPy as TM
-import TM_CommonPy.Narrator
 import sys
 import xml.etree.ElementTree
 import win32com.client, pywintypes
 import time
-import VisualStudioAutomation.Narrator
 from retrying import retry
 import win32process
 import psutil
