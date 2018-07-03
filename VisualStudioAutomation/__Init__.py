@@ -14,7 +14,4 @@ from VisualStudioAutomation.ConvenienceEtree import IntegrateProps
 from VisualStudioAutomation.ConvenienceEtree import IntegrateProps_Undo
 from VisualStudioAutomation.ConvenienceEtree import SetTMDefaultVSSettings
 
-
-__all__ = ["DTEWrapper"]
-
 __version__ = '0.20.0'
