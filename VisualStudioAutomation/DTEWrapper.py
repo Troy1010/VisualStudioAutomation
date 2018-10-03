@@ -44,7 +44,7 @@ class DTEWrapper():
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _QuitDTE(self):
         self.vDTE.Solution.Close()
-        iPID = win32process.GetWindowThreadProcessId(self.vDTE.ActiveWindow.HWnd)[1] #GetPID after Solution.Close() because Solution.Close() has to wait for GetPID, but not visaversa.
+        iPID = win32process.GetWindowThreadProcessId(self.vDTE.ActiveWindow.HWnd)[1] #GetPID after Solution.Close() because Solution.Close() has to wait for GetPID.
         self.vDTE.Quit()
         fTimer = VS.fClosePIDTimeout
         while psutil.pid_exists(iPID):

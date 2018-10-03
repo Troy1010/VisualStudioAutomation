@@ -126,9 +126,11 @@ class ProjWrapper():
         except Exception as e:
             if isinstance(e,pywintypes.com_error):
                 if hasattr(e,"hresult"):
-                    if e.hresult == -2147352567: #Solution already has file (I think)
+                    if e.hresult == -2147352567: #Generic error, presumably because Solution already has file.
                         for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
                             if vItem.Object.ProjectFile == sProjFile:
                                 return vItem
+                        else:
+                            raise
             raise
     ##endregion
