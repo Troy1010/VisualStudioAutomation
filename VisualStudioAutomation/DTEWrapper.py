@@ -1,5 +1,6 @@
 ##region Imports
 from VisualStudioAutomation.ProjWrapper import ProjWrapper
+from VisualStudioAutomation.SlnWrapper import SlnWrapper
 import VisualStudioAutomation as VS
 from VisualStudioAutomation._Logger import VSALog
 #---Non-Local
@@ -32,16 +33,8 @@ class DTEWrapper():
     def OpenProj(self, *args, **kwargs):
         return ProjWrapper(self, *args, **kwargs)
 
-    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def OpenSolution(self,sSolution):
-        #---Open
-        sSolution = os.path.abspath(sSolution)
-        #---Filter
-        if not os.path.isfile(sSolution):
-            raise OSError(2, 'No such Solution file', sSolution)
-        #---
-        self.vDTE.Solution.Open(sSolution)
-        return self.vDTE.Solution
+    def OpenSln(self, *args, **kwargs):
+        return SlnWrapper(self, *args, **kwargs)
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

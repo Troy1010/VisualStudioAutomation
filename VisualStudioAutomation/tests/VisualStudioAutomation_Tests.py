@@ -1,5 +1,6 @@
 ##region Settings
 bSkip=False
+bSkipSome=True
 bPostDelete=False
 ##endregion
 import unittest
@@ -30,12 +31,14 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     # ------Tests
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_AddFileToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld3.cpp")
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_AddFilterToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
@@ -43,6 +46,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
             self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_AddAndRemoveProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
@@ -60,6 +64,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.Save()
                 self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
@@ -68,6 +73,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_AddAndRemoveFileFromProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
@@ -80,6 +86,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.RemoveFile("HelloWorld2.cpp")
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_AddAndRemoveFileFromProj2(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -94,9 +101,42 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     vProjWrapper.Save()
                     self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
 
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_AddFile_FileDoesntExist(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with self.assertRaises(FileNotFoundError):
                     with vDTEWrapper.OpenProj("ZZZZZZZZZHelloWorld.vcxproj") as vProjWrapper:
                         pass
+
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    def test_AddProjToSln(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("HelloWorld.sln"):
+                    with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
+                        pass
+
+#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    def test_RemoveProjFromSln(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                    vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
+
+#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    def test_GetProjInSlnFromProjString(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                    vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
+                    self.assertIsNone(vProj)
+                    with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
+                        pass
+                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                    vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
+                    self.assertIsNotNone(vProj)
+                    vSlnWrapper.RemoveProj("HelloWorld2.vcxproj")
+                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                    vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
+                    self.assertIsNone(vProj)

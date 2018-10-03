@@ -1,6 +1,3 @@
-##region Reminders
-#Filters could be exception handlers
-##endregion
 ##region Imports
 import VisualStudioAutomation as VS
 from VisualStudioAutomation._Logger import VSALog
@@ -106,7 +103,7 @@ class ProjWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def Save(self):
-        VSALog.debug("Saving project..")
+        VSALog.debug("Saving project.")
         self.vProj.Save()
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
@@ -123,5 +120,15 @@ class ProjWrapper():
         if not os.path.isfile(sProjFile):
             raise OSError(2, 'No such Project file', sProjFile)
         #---
-        return self.vParentDTEWrapper.vDTE.Solution.AddFromFile(sProjFile)
+        try:
+            vProj = self.vParentDTEWrapper.vDTE.Solution.AddFromFile(sProjFile)
+            return vProj
+        except Exception as e:
+            if isinstance(e,pywintypes.com_error):
+                if hasattr(e,"hresult"):
+                    if e.hresult == -2147352567: #Solution already has file (I think)
+                        for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
+                            if vItem.Object.ProjectFile == sProjFile:
+                                return vItem
+            raise
     ##endregion
