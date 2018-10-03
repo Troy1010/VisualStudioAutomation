@@ -117,22 +117,21 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
                         pass
 
-#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_RemoveProjFromSln(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
 
-#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_GetProjInSlnFromProjString(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)
-                    with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
-                        pass
+                    vDTEWrapper.OpenProj("HelloWorld2.vcxproj")
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
                     self.assertIsNotNone(vProj)
@@ -140,3 +139,10 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)
+
+#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    def test_AddIncludeDir(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+                print(TM.Narrate(vProjWrapper.vProj.object.ActiveConfiguration.PropertySheets.Item(1).Name))
+                self.assertTrue(False)

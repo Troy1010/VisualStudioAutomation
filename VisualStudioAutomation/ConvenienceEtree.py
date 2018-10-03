@@ -46,7 +46,6 @@ class SetTMDefaultVSSettings:
         vIntDirElem.text = r"$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
         return (vIntDirElem,vElemGlobals)
 
-
 def IntegrateProps(sProjFile,sPropsFile):
     with TM.ElementTreeContext(sProjFile) as vTree:
         vToInsert = _ElementFromGeneratedBuildInfoFile(sProjFile,sPropsFile)
