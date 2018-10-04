@@ -11,11 +11,12 @@ from retrying import retry
 import win32process
 import psutil
 import logging, os
+from VisualStudioAutomation._Logger import VSALog
 ##endregion
 ##region Private
 def _ElementFromGeneratedBuildInfoFile(sProjFile,sPropsFile):
     sRelPath=os.path.relpath(sPropsFile,os.path.dirname(sProjFile))
-    return xml.etree.ElementTree.Element(r"Import", Project=sRelPath, Condition=r"Exists('"+sRelPath+r"')")
+    return xml.etree.ElementTree.Element(r"Import", Project=sRelPath, Condition=r"Exists('"+sRelPath+r"')") #<Import Condition="Exists('..\conanbuildinfo.props')" Project="..\conanbuildinfo.props" />
 ##endregion
 
 class SetTMDefaultVSSettings:
@@ -46,7 +47,6 @@ class SetTMDefaultVSSettings:
         vIntDirElem.text = r"$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
         return (vIntDirElem,vElemGlobals)
 
-
 def IntegrateProps(sProjFile,sPropsFile):
     with TM.ElementTreeContext(sProjFile) as vTree:
         vToInsert = _ElementFromGeneratedBuildInfoFile(sProjFile,sPropsFile)
@@ -67,3 +67,17 @@ def IntegrateProps_Undo(sProjFile,sPropsFile):
             return
         #---remove vToRemove
         vToRemoveFrom.remove(vToRemove)
+
+#beta
+def SetIncludeDir(sProjFile,sIncludeDir):
+    with TM.ElementTreeContext(sProjFile) as vTree:
+        #---Create insertable elem
+        vElemToInsert = xml.etree.ElementTree.Element("ItemDefinitionGroup")
+        xml.etree.ElementTree.SubElement(vElemToInsert, "ClCompile")
+        xml.etree.ElementTree.SubElement(vElemToInsert[0], "AdditionalIncludeDirectories")
+        vElemToInsert[0][0].text = sIncludeDir
+        VSALog.debug("SetIncludeDir`vElemToInsert:"+TM.Narrate(vElemToInsert))
+        #---Find where to insert
+        vElemToInsertAt = vTree.getroot()
+        #---Insert
+        TM.AppendElemIfAbsent(vElemToInsert,vElemToInsertAt)

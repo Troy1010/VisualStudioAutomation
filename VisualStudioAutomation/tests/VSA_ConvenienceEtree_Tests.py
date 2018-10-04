@@ -1,6 +1,6 @@
 ##region Settings
-bSkip=True
-bPostDelete=True
+bSkip=False
+bPostDelete=False
 ##endregion
 
 from unittest import TestCase
@@ -101,3 +101,8 @@ class Test_VSA_XML(TestCase):
             self.assertTrue(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))
             VS.SetTMDefaultVSSettings.Undo('HelloWorld.vcxproj')
             self.assertFalse(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))
+
+    def test_SetIncludeDir(self):
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            VS.SetIncludeDir('HelloWorld.vcxproj',"C:\ADir")
+            #self.assertTrue(False)

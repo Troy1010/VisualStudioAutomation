@@ -117,22 +117,21 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
                         pass
 
-#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_RemoveProjFromSln(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
 
-#    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @unittest.skipIf(bSkipSome,"SkipSome Setting")
     def test_GetProjInSlnFromProjString(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)
-                    with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
-                        pass
+                    vDTEWrapper.OpenProj("HelloWorld2.vcxproj")
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
                     self.assertIsNotNone(vProj)

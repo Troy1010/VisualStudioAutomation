@@ -14,5 +14,6 @@ from VisualStudioAutomation.SlnWrapper import SlnWrapper
 from VisualStudioAutomation.ConvenienceEtree import IntegrateProps
 from VisualStudioAutomation.ConvenienceEtree import IntegrateProps_Undo
 from VisualStudioAutomation.ConvenienceEtree import SetTMDefaultVSSettings
+from VisualStudioAutomation.ConvenienceEtree import SetIncludeDir
 
 __version__ = '0.20.0'
