@@ -105,4 +105,4 @@ class Test_VSA_XML(TestCase):
     def test_SetIncludeDir(self):
         with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             VS.SetIncludeDir('HelloWorld.vcxproj',"C:\ADir")
-            #self.assertTrue(False)
+            self.assertTrue(TM.IsTextInFile("C:\ADir",'HelloWorld.vcxproj'))

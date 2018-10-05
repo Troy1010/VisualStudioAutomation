@@ -1,6 +1,6 @@
 ##region Settings
 bSkip=False
-bSkipSome=True
+bSkipSome=False
 bPostDelete=False
 ##endregion
 import unittest
