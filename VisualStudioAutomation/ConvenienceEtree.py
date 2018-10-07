@@ -36,7 +36,7 @@ class SetTMDefaultVSSettings:
         vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
         vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
         vOutDirElem = xml.etree.ElementTree.Element(r"OutDir") #<OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
-        vOutDirElem.text = r"$(SolutionDir)bin\$(Platform)\$(Configuration)\\"
+        vOutDirElem.text = r"$(SolutionDir)bin\$(Platform)\$(Configuration)" + "\\"
         return (vOutDirElem,vElemGlobals)
 
     @staticmethod
@@ -44,7 +44,7 @@ class SetTMDefaultVSSettings:
         vElemGlobalsTemplate = xml.etree.ElementTree.Element(r"PropertyGroup", Label="Globals") #<PropertyGroup Label="Globals">
         vElemGlobals = TM.FindElem(vElemGlobalsTemplate,vTree)
         vIntDirElem = xml.etree.ElementTree.Element(r"IntDir") #<IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
-        vIntDirElem.text = r"$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\\"
+        vIntDirElem.text = r"$(SolutionDir)bin\intermediates\$(MSBuildProjectName)\$(Platform)\$(Configuration)" + "\\"
         return (vIntDirElem,vElemGlobals)
 
 def IntegrateProps(sProjFile,sPropsFile):
