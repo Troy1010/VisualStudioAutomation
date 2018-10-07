@@ -48,8 +48,9 @@ class SlnWrapper():
         sProjFile = os.path.abspath(sProjFile)
         #---
         for vItem in self.vSln.Projects:
-            if vItem.Object.ProjectFile == sProjFile:
-                return vItem
+            if hasattr(vItem.Object,"ProjectFile"):
+                if vItem.Object.ProjectFile == sProjFile:
+                    return vItem
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveProj(self,vProj):
