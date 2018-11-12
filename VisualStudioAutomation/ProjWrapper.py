@@ -128,7 +128,7 @@ class ProjWrapper():
                 if hasattr(e,"hresult"):
                     if e.hresult == -2147352567: #Generic error, presumably because Solution already has file.
                         for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
-                            if vItem.Object.ProjectFile == sProjFile:
+                            if hasattr(vItem,"Object") and hasattr(vItem.Object,"ProjectFile") and vItem.Object.ProjectFile == sProjFile:
                                 return vItem
                         else:
                             raise
