@@ -7,7 +7,7 @@ bRetryAttribErrors = True
 
 import TM_CommonPy as TM
 import VisualStudioAutomation as VS
-from VisualStudioAutomation.Global import IsRetryableException
+from VisualStudioAutomation.Misc import IsRetryableException
 from VisualStudioAutomation.DTEWrapper import DTEWrapper
 from VisualStudioAutomation.ProjWrapper import ProjWrapper
 from VisualStudioAutomation.SlnWrapper import SlnWrapper

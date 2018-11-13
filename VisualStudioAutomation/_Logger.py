@@ -11,10 +11,10 @@ VSALog = logging.getLogger(__name__)
 VSALog.setLevel(vMasterThreshold)
 vFormatter = logging.Formatter('%(levelname)-7s %(message)s')
 #---ConsoleHandler
-vConsoleHandler = logging.StreamHandler()
-vConsoleHandler.setLevel(vConsoleHandlerThreshold)
-vConsoleHandler.setFormatter(vFormatter)
-VSALog.addHandler(vConsoleHandler)
+# vConsoleHandler = logging.StreamHandler()
+# vConsoleHandler.setLevel(vConsoleHandlerThreshold)
+# vConsoleHandler.setFormatter(vFormatter)
+# VSALog.addHandler(vConsoleHandler)
 #---FileHandler
 try:
     os.remove(sLogFile)

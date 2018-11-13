@@ -1,6 +1,4 @@
 ##region Settings
-bSkip=False
-bSkipSome=False
 bPostDelete=False
 ##endregion
 import unittest
@@ -12,14 +10,16 @@ import xml.etree.ElementTree
 import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 import time
+from nose.plugins.attrib import attr
 
-@unittest.skipIf(bSkip,"Skip Setting")
+vCounter = TM.Counter()
+
 class Test_VisualStudioAutomation(unittest.TestCase):
     sTestWorkspace = "TestWorkspace/"
 
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','tests'))
+        os.chdir(os.path.join('VisualStudioAutomation','!_tests'))
         TM.Delete(self.sTestWorkspace)
 
     @classmethod
@@ -30,15 +30,20 @@ class Test_VisualStudioAutomation(unittest.TestCase):
         os.chdir(os.path.join('..','..'))
 
     # ------Tests
+    # @attr(count=vCounter())
+    # def test_TwoDTEs(self):
+    #     with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+    #         with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, VS.DTEWrapper() as vDTEWrapper2, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper2:
+    #             pass
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddFileToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld3.cpp")
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddFilterToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
@@ -46,7 +51,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
             self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddAndRemoveProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
@@ -64,7 +69,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.Save()
                 self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
@@ -73,7 +78,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddAndRemoveFileFromProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
@@ -86,7 +91,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.RemoveFile("HelloWorld2.cpp")
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddAndRemoveFileFromProj2(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -101,15 +106,15 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     vProjWrapper.Save()
                     self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddFile_FileDoesntExist(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with self.assertRaises(FileNotFoundError):
-                    with vDTEWrapper.OpenProj("ZZZZZZZZZHelloWorld.vcxproj") as vProjWrapper:
+                    with vDTEWrapper.OpenProj("NonexistantProject.vcxproj") as vProjWrapper:
                         pass
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_AddProjToSln(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -117,14 +122,14 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
                         pass
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_RemoveProjFromSln(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
 
-    @unittest.skipIf(bSkipSome,"SkipSome Setting")
+    @attr(count=vCounter())
     def test_GetProjInSlnFromProjString(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
