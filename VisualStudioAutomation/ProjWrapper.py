@@ -127,8 +127,8 @@ class ProjWrapper():
         try:
             vProj = self.vParentDTEWrapper.vDTE.Solution.AddFromFile(sProjFile)
             return vProj
-        except Exception as e:
-            if isinstance(e,pywintypes.com_error) and hasattr(e,"hresult") and e.hresult == -2147352567: #Generic error, presumably because Solution already has file.
+        except pywintypes.com_error as e:
+            if e.hresult == -2147352567: #Generic error, presumably because Solution already has file.
                 VSALog.debug("len(self.vParentDTEWrapper.vDTE.Solution.Projects):"+str(self.vParentDTEWrapper.vDTE.Solution.Projects.Count))
                 for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
                     VSALog.debug("vItem.Name:"+str(vItem.Name))
