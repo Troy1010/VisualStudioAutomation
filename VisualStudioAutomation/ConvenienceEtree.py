@@ -19,6 +19,26 @@ def _ElementFromGeneratedBuildInfoFile(sProjFile,sPropsFile):
     return xml.etree.ElementTree.Element(r"Import", Project=sRelPath, Condition=r"Exists('"+sRelPath+r"')") #<Import Condition="Exists('..\conanbuildinfo.props')" Project="..\conanbuildinfo.props" />
 ##endregion
 
+def GetProjectGUID(sProjFile):
+    with TM.ElementTreeContext(sProjFile) as vTree:
+        vToFind = xml.etree.ElementTree.Element("ProjectGuid")
+        vProjectGuidElem = TM.FindElem(vToFind,vTree)
+        if vProjectGuidElem is not None:
+            return vProjectGuidElem.text
+
+def SetIncludeDir(sProjFile,sIncludeDir):
+    with TM.ElementTreeContext(sProjFile) as vTree:
+        #---Create insertable elem
+        vElemToInsert = xml.etree.ElementTree.Element("ItemDefinitionGroup")
+        xml.etree.ElementTree.SubElement(vElemToInsert, "ClCompile")
+        xml.etree.ElementTree.SubElement(vElemToInsert[0], "AdditionalIncludeDirectories")
+        vElemToInsert[0][0].text = sIncludeDir
+        VSALog.debug("SetIncludeDir`vElemToInsert:"+TM.Narrate(vElemToInsert))
+        #---Find where to insert
+        vElemToInsertAt = vTree.getroot()
+        #---Insert
+        TM.AppendElemIfAbsent(vElemToInsert,vElemToInsertAt)
+
 class SetTMDefaultVSSettings:
     @classmethod
     def Do(myClass,sProj):
@@ -67,17 +87,3 @@ def IntegrateProps_Undo(sProjFile,sPropsFile):
             return
         #---remove vToRemove
         vToRemoveFrom.remove(vToRemove)
-
-#beta
-def SetIncludeDir(sProjFile,sIncludeDir):
-    with TM.ElementTreeContext(sProjFile) as vTree:
-        #---Create insertable elem
-        vElemToInsert = xml.etree.ElementTree.Element("ItemDefinitionGroup")
-        xml.etree.ElementTree.SubElement(vElemToInsert, "ClCompile")
-        xml.etree.ElementTree.SubElement(vElemToInsert[0], "AdditionalIncludeDirectories")
-        vElemToInsert[0][0].text = sIncludeDir
-        VSALog.debug("SetIncludeDir`vElemToInsert:"+TM.Narrate(vElemToInsert))
-        #---Find where to insert
-        vElemToInsertAt = vTree.getroot()
-        #---Insert
-        TM.AppendElemIfAbsent(vElemToInsert,vElemToInsertAt)

@@ -13,6 +13,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 from VisualStudioAutomation.ConvenienceEtree import _ElementFromGeneratedBuildInfoFile
 from nose.plugins.attrib import attr
+from VisualStudioAutomation.aa_tests._Logger import VSLog_LogTests
 
 vCounter = TM.Counter()
 
@@ -21,7 +22,7 @@ class Test_VSA_XML(TestCase):
 
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','!_tests'))
+        os.chdir(os.path.join('VisualStudioAutomation','aa_tests'))
         TM.Delete(self.sTestWorkspace)
 
     @classmethod
@@ -32,6 +33,13 @@ class Test_VSA_XML(TestCase):
         os.chdir(os.path.join('..','..'))
 
     #------Tests
+
+    @attr(count=vCounter())
+    def test_GetProjectGuid(self):
+        VSLog_LogTests.info("\n\n-------"+TM.FnName())
+        with TM.CopyContext("res/Examples_XML_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            vVar = VS.GetProjectGUID('HelloWorld.vcxproj')
+            VSLog_LogTests.info("vVar:"+str(vVar))
 
     @attr(count=vCounter())
     def test_IntegrateProps_AndUndo(self):

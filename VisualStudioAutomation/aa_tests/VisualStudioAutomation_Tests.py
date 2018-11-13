@@ -19,7 +19,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','!_tests'))
+        os.chdir(os.path.join('VisualStudioAutomation','aa_tests'))
         TM.Delete(self.sTestWorkspace)
 
     @classmethod
@@ -29,12 +29,30 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             TM.Delete(self.sTestWorkspace)
         os.chdir(os.path.join('..','..'))
 
-    # ------Tests
-    # @attr(count=vCounter())
-    # def test_TwoDTEs(self):
-    #     with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-    #         with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, VS.DTEWrapper() as vDTEWrapper2, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper2:
-    #             pass
+    #------Tests
+
+    @unittest.skip("temporarily disabled")
+    @attr(count=vCounter())
+    def test_OpenDTE(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with VS.DTEWrapper() as vDTEWrapper2:
+                    pass
+                pass
+
+    @unittest.skip("temporarily disabled")
+    @attr(count=vCounter())
+    def test_TwoDTEs(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+                    with VS.DTEWrapper() as vDTEWrapper2:
+                        with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper2:
+                            pass
+                        pass
+                    pass
+                pass
+            pass
 
     @attr(count=vCounter())
     def test_AddFileToProj(self):

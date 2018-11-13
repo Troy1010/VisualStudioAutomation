@@ -1,5 +1,4 @@
 ##region Settings
-bWriteLog = True
 sVisualStudioDTE = "VisualStudio.DTE.15.0"
 fClosePIDTimeout = 30
 bRetryAttribErrors = True
@@ -15,5 +14,6 @@ from VisualStudioAutomation.ConvenienceEtree import IntegrateProps
 from VisualStudioAutomation.ConvenienceEtree import IntegrateProps_Undo
 from VisualStudioAutomation.ConvenienceEtree import SetTMDefaultVSSettings
 from VisualStudioAutomation.ConvenienceEtree import SetIncludeDir
+from VisualStudioAutomation.ConvenienceEtree import GetProjectGUID
 
 __version__ = '0.20.0'
