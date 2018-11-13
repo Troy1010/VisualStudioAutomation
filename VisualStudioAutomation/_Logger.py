@@ -1,17 +1,26 @@
+import os, logging
 ##region Settings
-import os
-bWriteLog = True
+bWriteLogFile = True
 sLogFile = os.path.join(__file__,'..','VSALog.log')
+vMasterThreshold = logging.DEBUG
+vConsoleHandlerThreshold = logging.WARNING
+vFileHandlerThreshold = logging.DEBUG
 ##endregion
-##region LogInit
-import logging
+
 VSALog = logging.getLogger(__name__)
-VSALog.setLevel(logging.DEBUG)
+VSALog.setLevel(vMasterThreshold)
+vFormatter = logging.Formatter('%(levelname)-7s %(message)s')
+#---ConsoleHandler
+vConsoleHandler = logging.StreamHandler()
+vConsoleHandler.setLevel(vConsoleHandlerThreshold)
+vConsoleHandler.setFormatter(vFormatter)
+VSALog.addHandler(vConsoleHandler)
+#---FileHandler
 try:
     os.remove(sLogFile)
 except (PermissionError,FileNotFoundError):
     pass
-if bWriteLog:
+if bWriteLogFile:
     bLogFileIsOpen = False
     try:
         os.rename(sLogFile,sLogFile)
@@ -20,5 +29,7 @@ if bWriteLog:
     except FileNotFoundError:
         pass
     if not bLogFileIsOpen:
-        VSALog.addHandler(logging.FileHandler(sLogFile))
-##endregion
+        vFileHandler = logging.FileHandler(sLogFile)
+        vFileHandler.setFormatter(vFormatter)
+        vFileHandler.setLevel(vFileHandlerThreshold)
+        VSALog.addHandler(vFileHandler)
