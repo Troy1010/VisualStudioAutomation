@@ -59,6 +59,7 @@ class SlnWrapper():
             vProj = self.GetProjInSlnFromProjString(vProj)
             if vProj is None:
                 VSALog.debug("RemoveProj`Could not find project to remove.")
+                return
         #---
         self.vParentDTEWrapper.vDTE.Solution.Remove(vProj)
 
