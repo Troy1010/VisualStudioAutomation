@@ -11,7 +11,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 import time
 from nose.plugins.attrib import attr
-from VisualStudioAutomation.aa_tests._Logger import VSLog_LogTests
+from VisualStudioAutomation._tests._Logger import VSLog_LogTests
 
 vCounter = TM.Counter()
 
@@ -20,7 +20,8 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','aa_tests'))
+        self.sOldCWD = os.getcwd()
+        os.chdir(os.path.dirname(__file__))
         TM.Delete(self.sTestWorkspace)
 
     @classmethod
@@ -28,7 +29,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
         global bPostDelete
         if bPostDelete:
             TM.Delete(self.sTestWorkspace)
-        os.chdir(os.path.join('..','..'))
+        os.chdir(self.sOldCWD)
 
     #------Tests
 

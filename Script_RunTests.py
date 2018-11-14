@@ -7,7 +7,7 @@ import os
 
 
 try:
-    TM.Run("python setup.py nosetests --stop --verbosity=3")
+    TM.Run("python setup.py nosetests --tests=VisualStudioAutomation._tests --stop --verbosity=3")
 except Exception as e:
     print(e)
     os.system('pause')

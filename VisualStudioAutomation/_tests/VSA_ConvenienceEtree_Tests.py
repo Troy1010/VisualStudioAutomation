@@ -13,7 +13,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 from VisualStudioAutomation.ConvenienceEtree import _ElementFromGeneratedBuildInfoFile
 from nose.plugins.attrib import attr
-from VisualStudioAutomation.aa_tests._Logger import VSLog_LogTests
+from VisualStudioAutomation._tests._Logger import VSLog_LogTests
 
 vCounter = TM.Counter()
 
@@ -22,7 +22,7 @@ class Test_VSA_XML(TestCase):
 
     @classmethod
     def setUpClass(self):
-        os.chdir(os.path.join('VisualStudioAutomation','aa_tests'))
+        os.chdir(os.path.join('VisualStudioAutomation','_tests'))
         TM.Delete(self.sTestWorkspace)
 
     @classmethod
