@@ -1,1 +1,0 @@
-[EnvDTEUtils.MessageFilter]::Register()
