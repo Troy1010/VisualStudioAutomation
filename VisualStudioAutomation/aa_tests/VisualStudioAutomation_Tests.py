@@ -11,6 +11,7 @@ import TM_CommonPy as TM
 import VisualStudioAutomation as VS
 import time
 from nose.plugins.attrib import attr
+from VisualStudioAutomation.aa_tests._Logger import VSLog_LogTests
 
 vCounter = TM.Counter()
 
@@ -30,6 +31,16 @@ class Test_VisualStudioAutomation(unittest.TestCase):
         os.chdir(os.path.join('..','..'))
 
     #------Tests
+
+    @attr(count=vCounter())
+    def test_LogProjectList(self):
+        VSLog_LogTests.info("\n\n-------"+TM.FnName())
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                    VSLog_LogTests.info("HelloWorld Projects:"+TM.Narrate(vSlnWrapper.vSln.Projects,iRecursionThreshold=3))
+                with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
+                    VSLog_LogTests.info("CompleteControl Projects:"+TM.Narrate(vSlnWrapper.vSln.Projects,iRecursionThreshold=3))
 
     @unittest.skip("temporarily disabled")
     @attr(count=vCounter())
