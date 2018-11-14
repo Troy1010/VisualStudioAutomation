@@ -52,9 +52,6 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
                     VSLog_LogTests.info(TM.Narrate(vDTEWrapper.GetProjByName("CompleteControl")))
-                    pass
-                pass
-            pass
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_LogProjectList(self):
