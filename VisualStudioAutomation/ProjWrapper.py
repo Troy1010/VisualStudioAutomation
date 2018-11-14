@@ -128,44 +128,13 @@ class ProjWrapper():
             vProj = self.vParentDTEWrapper.vDTE.Solution.AddFromFile(sProjFile)
             return vProj
         except pywintypes.com_error as e:
-            if e.hresult == -2147352567: #Generic error, presumably because Solution already has file.
-                VSALog.debug("len(self.vParentDTEWrapper.vDTE.Solution.Projects):"+str(self.vParentDTEWrapper.vDTE.Solution.Projects.Count))
-                for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
-                    VSALog.debug("vItem.Name:"+str(vItem.Name))
-                    sProjectFile = ""
-                    if hasattr(vItem,"ProjectFile"):
-                        if vItem.ProjectFile == sProjFile:
-                            return vItem
-                    elif hasattr(vItem,"Properties") and "ProjectFile" in TM.COM.COMCollectionToDict(vItem.Properties).keys(): #hasattr(vItem.Properties,"ProjectFile") has unexpected results
-                        VSALog.debug("COMPARE("+str(bool(TM.COM.COMCollectionToDict(vItem.Properties)['ProjectFile'] == sProjFile))+"):"+TM.COM.COMCollectionToDict(vItem.Properties)["ProjectFile"]+" : "+sProjFile)
-                        VSALog.debug("TM.COM.COMCollectionToDict(vItem.Properties)['ProjectFile']:"+TM.Narrate(TM.COM.COMCollectionToDict(vItem.Properties)["ProjectFile"]))
-                        if TM.COM.COMCollectionToDict(vItem.Properties)["ProjectFile"] == sProjFile:
-                            return vItem
-                    else:
-                        VSALog.debug(TM.Narrate(TM.COM.COMCollectionToDict(vItem.Properties)))
-                        print("bool1:"+str(hasattr(vItem,"Properties"))+" bool2:"+str(hasattr(vItem.Properties,"ProjectFile")))
-                        #VSALog.debug("vItem.Properties(list):"+TM.Narrate(list(vItem.Properties))) #Produced error
-                        #VSALog.debug("vItem.Properties:"+TM.Narrate(vItem.Properties))
-                        if vItem.Properties is None:
-                            VSALog.debug("vItem.Properties is None")
-                        else:
-                            VSALog.debug("vItem.Properties is NOT None`Open")
-                            vVar = list(vItem.Properties)
-                            VSALog.debug("vItem.Properties is NOT None`Mid")
-                            VSALog.debug("vItem.Properties(list):"+TM.Narrate(vVar))
-                            #VSALog.debug("vItem.Properties:"+TM.Narrate(vItem.Properties))
-                            VSALog.debug("vItem.Properties is NOT None`Close")
-                            #VSALog.debug("vItem.Properties:"+TM.Narrate(vItem.Properties))
-                        #vVar = list(vItem.Properties)
-                        #VSALog.debug("vItem.Properties(list):"+str(vVar))
-                        #VSALog.debug("vItem.Properties.ProjectFile..")
-                        #VSALog.debug(str(vItem.Properties.ProjectFile))
-                        #VSALog.debug("vItem.Properties.ProjectFile^^")
-                        # if sProjectFile != "":
-                        #     VSALog.debug("sProjFile did not match:" + sProjectFile)
-                        # else:
-                        #     VSALog.debug("sProjectFile not found in vItem:" + TM.Narrate(vItem))
-                else:
-                    VSALog.debug("Error. Could not find:" + sProjFile +" in vDTE.Solution.Projects:" + TM.Narrate(self.vParentDTEWrapper.vDTE.Solution.Projects))
+            if e.hresult != -2147352567: #Generic error, presumably because Solution already has project with the same GUID.
+                raise
+            sProjectGUID = VS.GetProjectGUID(sProjFile)
+            for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
+                if hasattr(vItem,"object") and hasattr(vItem.object,"ProjectGUID") and vItem.object.ProjectGUID == sProjectGUID:
+                    return vItem
+            else:
+                VSALog.debug("Could not match sProjectGUID:" + sProjectGUID)
             raise
     ##endregion
