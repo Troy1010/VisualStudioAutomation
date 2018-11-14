@@ -43,20 +43,19 @@ class SlnWrapper():
         self.vSln.SaveAs(self.sSlnFile)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def GetProjInSlnFromProjString(self,sProjFile):
+    def GetProjInSlnByProjFile(self,sProjFile):
         #---Open
         sProjFile = os.path.abspath(sProjFile)
         #---
         for vItem in self.vSln.Projects:
-            if hasattr(vItem.Object,"ProjectFile"):
-                if vItem.Object.ProjectFile == sProjFile:
+            if hasattr(vItem.Object,"ProjectFile") and vItem.Object.ProjectFile == sProjFile:
                     return vItem
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveProj(self,vProj):
         #---Open
         if isinstance(vProj,str):
-            vProj = self.GetProjInSlnFromProjString(vProj)
+            vProj = self.GetProjInSlnByProjFile(vProj)
             if vProj is None:
                 VSALog.debug("RemoveProj`Could not find project to remove.")
                 return

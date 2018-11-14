@@ -34,14 +34,14 @@ class Test_VSA_XML(TestCase):
 
     #------Tests
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjectGuid(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             vVar = VS.GetProjectGUID('HelloWorld.vcxproj')
             VSLog_LogTests.info("vVar:"+str(vVar))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_IntegrateProps_AndUndo(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
@@ -49,7 +49,7 @@ class Test_VSA_XML(TestCase):
             VS.IntegrateProps_Undo('HelloWorld.vcxproj','conanbuildinfo.props')
             self.assertFalse(TM.IsTextInFile('conanbuildinfo.props','HelloWorld.vcxproj'))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_IntegrateProps_AndUndo_OnFileWithBOM(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             VS.IntegrateProps('obse_plugin_example_RAW.vcxproj','conanbuildinfo.props')
@@ -57,7 +57,7 @@ class Test_VSA_XML(TestCase):
             VS.IntegrateProps_Undo('obse_plugin_example_RAW.vcxproj','conanbuildinfo.props')
             self.assertFalse(TM.IsTextInFile('conanbuildinfo.props','obse_plugin_example_RAW.vcxproj'))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test__ElementFromGeneratedBuildInfoFile_ByExample(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             vElem = _ElementFromGeneratedBuildInfoFile('HelloWorld.vcxproj','conanbuildinfo.props')
@@ -67,7 +67,7 @@ class Test_VSA_XML(TestCase):
             self.assertTrue(vElem.attrib['Project'] == 'conanbuildinfo.props')
             self.assertTrue(vElem.attrib['Condition'] == 'Exists(\'conanbuildinfo.props\')')
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_IntegrateProps_UseTwiceAndNoDupEntry(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
@@ -87,7 +87,7 @@ class Test_VSA_XML(TestCase):
             self.assertTrue(bFoundParent)
             self.assertEqual(iCount,1)
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_IntegrateProps_Undo_OveruseProtocol_Try(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             VS.IntegrateProps('HelloWorld.vcxproj','conanbuildinfo.props')
@@ -107,7 +107,7 @@ class Test_VSA_XML(TestCase):
             self.assertTrue(bFoundParent)
             self.assertEqual(iCount,0)
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_SetTMDefaultVSSettings(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))
@@ -116,7 +116,7 @@ class Test_VSA_XML(TestCase):
             VS.SetTMDefaultVSSettings.Undo('HelloWorld.vcxproj')
             self.assertFalse(TM.IsTextInFile("OutDir",'HelloWorld.vcxproj'))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_SetIncludeDir(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             VS.SetIncludeDir('HelloWorld.vcxproj',"C:\ADir")

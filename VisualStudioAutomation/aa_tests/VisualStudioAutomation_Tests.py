@@ -32,7 +32,30 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     #------Tests
 
-    @attr(count=vCounter())
+    #Missing assertion
+    @unittest.skip("temporarily disabled")
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_RemoveProjFromSlnWithoutProj(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
+                    vSlnWrapper.RemoveProj(vDTEWrapper.GetProjByName("CompleteControl"))
+                    pass
+                pass
+            pass
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_GetProjByName(self):
+        VSLog_LogTests.info("\n\n-------"+TM.FnName())
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
+                    VSLog_LogTests.info(TM.Narrate(vDTEWrapper.GetProjByName("CompleteControl")))
+                    pass
+                pass
+            pass
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_LogProjectList(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
@@ -43,7 +66,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     VSLog_LogTests.info("CompleteControl Projects:"+TM.Narrate(vSlnWrapper.vSln.Projects,iRecursionThreshold=3))
 
     @unittest.skip("temporarily disabled")
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_OpenDTE(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -52,7 +75,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 pass
 
     @unittest.skip("temporarily disabled")
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_TwoDTEs(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -65,14 +88,14 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 pass
             pass
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddFileToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld3.cpp")
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddFilterToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
@@ -80,7 +103,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
             self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
@@ -98,7 +121,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.Save()
                 self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
@@ -107,7 +130,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             self.assertTrue(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveFileFromProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
@@ -120,7 +143,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 vProjWrapper.RemoveFile("HelloWorld2.cpp")
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveFileFromProj2(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -135,7 +158,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     vProjWrapper.Save()
                     self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddFile_FileDoesntExist(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -143,7 +166,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     with vDTEWrapper.OpenProj("NonexistantProject.vcxproj") as vProjWrapper:
                         pass
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddProjToSln(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -151,25 +174,25 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                     with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
                         pass
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveProjFromSln(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
 
-    @attr(count=vCounter())
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjInSlnFromProjString(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
+                    vProj = vSlnWrapper.GetProjInSlnByProjFile("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)
                     vDTEWrapper.OpenProj("HelloWorld2.vcxproj")
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
+                    vProj = vSlnWrapper.GetProjInSlnByProjFile("HelloWorld2.vcxproj")
                     self.assertIsNotNone(vProj)
                     vSlnWrapper.RemoveProj("HelloWorld2.vcxproj")
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vProj = vSlnWrapper.GetProjInSlnFromProjString("HelloWorld2.vcxproj")
+                    vProj = vSlnWrapper.GetProjInSlnByProjFile("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)

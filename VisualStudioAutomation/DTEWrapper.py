@@ -36,6 +36,17 @@ class DTEWrapper():
     def OpenSln(self, *args, **kwargs):
         return SlnWrapper(self, *args, **kwargs)
 
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
+    def GetProjByName(self, sProjName):
+        vReturning = None
+        for vItem in self.vDTE.Solution.Projects:
+            if vItem.Name == sProjName:
+                if vReturning is None:
+                    vReturning = vItem
+                else:
+                    raise Exception(TM.FnName()+"`sProjName matched multiple projects.")
+        return vReturning
+
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _InstantiateDTE(self):
