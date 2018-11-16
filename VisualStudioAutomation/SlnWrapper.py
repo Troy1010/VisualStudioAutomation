@@ -45,6 +45,10 @@ class SlnWrapper():
         self.vSln.SaveAs(self.sSlnFile)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
+    def GetProjInSln(self, vProjToken):
+        return VS.GetProjInContainer(self.vSln.Projects,vProjToken)
+
+    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def GetProjInSlnByProjFile(self,sProjFile):
         #---Open
         sProjFile = os.path.abspath(sProjFile)
