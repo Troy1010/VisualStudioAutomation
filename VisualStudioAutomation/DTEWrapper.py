@@ -17,10 +17,16 @@ import psutil
 import logging, os
 ##endregion
 
+bDTEOpen = False
+
 class DTEWrapper():
-    vDTE = None
     def __init__(self):
+        global bDTEOpen
+        if bDTEOpen:
+            raise Exception("Only one DTE can be open at a time.")
         self.vDTE = self._InstantiateDTE()
+        self.cSlnProjPairToDelete = []
+        bDTEOpen = True
     def __enter__(self):
         return self
     def __exit__(self, type, value, traceback):
@@ -29,6 +35,10 @@ class DTEWrapper():
         if not self.vDTE is None:
             self._QuitDTE()
             self.vDTE = None
+        for vItem in self.cSlnProjPairToDelete:
+            VS.RemoveProjectFromSlnFile(*vItem)
+        global bDTEOpen
+        bDTEOpen = False
 
     def OpenProj(self, *args, **kwargs):
         return ProjWrapper(self, *args, **kwargs)

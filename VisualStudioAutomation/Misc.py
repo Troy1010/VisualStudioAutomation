@@ -39,3 +39,22 @@ def IsRetryableException(e):
                 +"\nSetting bRetryAttribErrors=True is recommended. If the exception reoccurs, it is a true attrib error."
                 ) from e
     return False
+
+def RemoveProjectFromSlnFile(sSlnFile, sProjFile):
+    try:
+        with open(sSlnFile, 'r+') as vSlnFile:
+            cLines = vSlnFile.readlines()
+            vSlnFile.seek(0)
+            bStartSkipping = False
+            for sLine in cLines:
+                if "Project" == sLine[:7] and os.path.basename(sProjFile) in sLine:
+                    bStartSkipping = True
+                elif bStartSkipping:
+                    bStartSkipping = False
+                    if not "EndProject" in sLine:
+                        VSALog.warning("Expected EndProject at line:"+sLine)
+                else:
+                    vSlnFile.write(sLine)
+            vSlnFile.truncate()
+    except:
+        raise

@@ -7,7 +7,7 @@ import os
 import subprocess
 
 try:
-    subprocess.run(['python','setup.py','nosetests','--tests','VisualStudioAutomation._tests','--stop','--verbosity=3','--eval-attr','(count < 2 and VisualStudioAutomation_Tests) or (count < 5 and VSA_ConvenienceEtree_Tests)'])
+    subprocess.run(['python','setup.py','nosetests','--tests','VisualStudioAutomation._tests','--stop','--verbosity=3','--eval-attr','(count < 4 and VisualStudioAutomation_Tests) or (count < 2 and VSA_ConvenienceEtree_Tests)'])
 except Exception as e:
     print(e)
     os.system('pause')

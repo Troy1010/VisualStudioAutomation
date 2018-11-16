@@ -35,6 +35,13 @@ class Test_VSA_XML(TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_RemoveProjectFromSlnFile(self):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
+            self.assertTrue(TM.IsTextInFile('HelloWorld.vcxproj','HelloWorld.sln'))
+            VS.RemoveProjectFromSlnFile('HelloWorld.sln','HelloWorld.vcxproj')
+            self.assertFalse(TM.IsTextInFile('HelloWorld.vcxproj','HelloWorld.sln'))
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjectGuid(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):

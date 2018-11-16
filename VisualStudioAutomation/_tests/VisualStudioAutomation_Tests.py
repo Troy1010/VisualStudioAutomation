@@ -33,17 +33,16 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     #------Tests
 
-    #Missing assertion
-    @unittest.skip("temporarily disabled")
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_RemoveProjFromSlnWithoutProj(self):
+    def test_RemoveProjFromSlnWithoutProj_Ghost(self):
+        VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
-                    vSlnWrapper.RemoveProj(vDTEWrapper.GetProjByName("CompleteControl"))
-                    pass
-                pass
-            pass
+                    sSlnFile = vSlnWrapper.sSlnFile
+                    self.assertTrue("common.vcxproj" in TM.GetFileContent(sSlnFile))
+                    vSlnWrapper.RemoveProj(vDTEWrapper.GetProjByName("common"),bRemoveUnloaded=True)
+            self.assertFalse("common.vcxproj" in TM.GetFileContent(sSlnFile))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjByName(self):
@@ -63,28 +62,22 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
                     VSLog_LogTests.info("CompleteControl Projects:"+TM.Narrate(vSlnWrapper.vSln.Projects,iRecursionThreshold=3))
 
-    @unittest.skip("temporarily disabled")
-    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_OpenDTE(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.DTEWrapper() as vDTEWrapper:
-                with VS.DTEWrapper() as vDTEWrapper2:
-                    pass
-                pass
-
-    @unittest.skip("temporarily disabled")
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_TwoDTEs(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.DTEWrapper() as vDTEWrapper:
-                with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+            with self.assertRaises(Exception):
+                with VS.DTEWrapper() as vDTEWrapper:
                     with VS.DTEWrapper() as vDTEWrapper2:
-                        with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper2:
-                            pass
-                        pass
-                    pass
-                pass
-            pass
+                       pass
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_RemoveProjFromSlnByName(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                    self.assertFalse(vDTEWrapper.GetProjByName("HelloWorld") is None)
+                    vSlnWrapper.RemoveProj(vDTEWrapper.GetProjByName("HelloWorld"))
+                    self.assertTrue(vDTEWrapper.GetProjByName("HelloWorld") is None)
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddFileToProj(self):

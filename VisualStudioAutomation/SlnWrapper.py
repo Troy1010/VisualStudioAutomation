@@ -15,6 +15,8 @@ import psutil
 import logging, os
 ##endregion
 
+#The Solution is actually just a collection object belonging to the DTE.
+#It doesn't look like there can be multiple open at a time.
 class SlnWrapper():
     vSln = None
     def __init__(self,vParentDTEWrapper,sSlnFile,bSave=True):
@@ -52,7 +54,7 @@ class SlnWrapper():
                     return vItem
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def RemoveProj(self,vProj):
+    def RemoveProj(self,vProj,bRemoveUnloaded=False):
         #---Open
         if isinstance(vProj,str):
             vProj = self.GetProjInSlnByProjFile(vProj)
@@ -60,7 +62,18 @@ class SlnWrapper():
                 VSALog.debug("RemoveProj`Could not find project to remove.")
                 return
         #---
-        self.vParentDTEWrapper.vDTE.Solution.Remove(vProj)
+        try:
+            self.vParentDTEWrapper.vDTE.Solution.Remove(vProj)
+        except pywintypes.com_error as e:
+            if e.hresult != -2147352567: #Generic error, presumably because vProj is unloaded
+                raise
+            if vProj.Object is None:
+                if not bRemoveUnloaded:
+                    raise Exception("You have attempted to remove an unloaded project, but the DTE com object has trouble doing that."
+                                    "\nSet bRemoveUnloaded to true if you want the project to be removed after the DTE closes.")
+                else:
+                    self.vParentDTEWrapper.cSlnProjPairToDelete.append((self.sSlnFile,os.path.basename(vProj.UniqueName)))
+
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
