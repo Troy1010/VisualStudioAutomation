@@ -98,10 +98,18 @@ class ProjWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveProjRef(self,vProjToUnreference):
+        if isinstance(vProjToUnreference,str):
+            vProjToUnreference = os.path.splitext(vProjToUnreference)[0]
+        else:
+            vProjToUnreference = vProjToUnreference.Name
         cToRemove = []
+        bFound = False
         for vItem in self.vProj.Object.References:
-            if vItem.Name == vProjToUnreference.Name:
+            if vItem.Name == vProjToUnreference:
                 cToRemove.append(vItem)
+                if bFound:
+                    VSALog.warning("RemoveProjRef matched multiple projects.")
+                bFound = True
         for vItem in cToRemove:
             vItem.Remove()
 

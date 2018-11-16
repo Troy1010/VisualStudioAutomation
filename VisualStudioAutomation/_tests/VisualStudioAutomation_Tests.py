@@ -113,6 +113,24 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_AddAndRemoveProjRef_String(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
+                self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
+                vProjWrapper.Save()
+                self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.RemoveProjRef("HelloWorld2.vcxproj")
+                vProjWrapper.Save()
+                self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
+                vProjWrapper.Save()
+                self.assertTrue(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+                vProjWrapper.RemoveProjRef("HelloWorld2")
+                vProjWrapper.Save()
+                self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_Add2FilesToProj(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
