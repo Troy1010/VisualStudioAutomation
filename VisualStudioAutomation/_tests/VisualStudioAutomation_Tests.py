@@ -41,7 +41,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
                     sSlnFile = vSlnWrapper.sSlnFile
                     self.assertTrue("common.vcxproj" in TM.GetFileContent(sSlnFile))
-                    vSlnWrapper.RemoveProj(vDTEWrapper.GetProjInSln("common"),bRemoveUnloaded=True)
+                    vSlnWrapper.RemoveProj(vDTEWrapper.GetProjInSln("common"),bRemoveUnloadedPostDTE=True)
             self.assertFalse("common.vcxproj" in TM.GetFileContent(sSlnFile))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})

@@ -59,7 +59,7 @@ class SlnWrapper():
                     return vItem
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def RemoveProj(self,vProj,bRemoveUnloaded=False):
+    def RemoveProj(self,vProj,bRemoveUnloadedPostDTE=False):
         #---Open
         if isinstance(vProj,str):
             vProj = self.GetProjInSlnByProjFile(vProj)
@@ -73,9 +73,9 @@ class SlnWrapper():
             if e.hresult != -2147352567: #Generic error, presumably because vProj is unloaded
                 raise
             if vProj.Object is None:
-                if not bRemoveUnloaded:
+                if not bRemoveUnloadedPostDTE:
                     raise Exception("You have attempted to remove an unloaded project, but the DTE com object has trouble doing that."
-                                    "\nSet bRemoveUnloaded to true if you want the project to be removed after the DTE closes.")
+                                    "\nSet bRemoveUnloadedPostDTE to true if you want the project to be removed after the DTE closes.")
                 else:
                     self.vParentDTEWrapper.cSlnProjPairToDelete.append((self.sSlnFile,os.path.basename(vProj.UniqueName)))
 
@@ -89,10 +89,10 @@ class SlnWrapper():
         if not os.path.isfile(sSlnFile):
             raise OSError(2, 'No such Solution file', sSlnFile)
         #---
-        self.vParentDTEWrapper.vDTE.Solution.Open(sSlnFile)
-        if os.path.split(self.vParentDTEWrapper.vDTE.Solution.FileName)[0] != os.path.split(sSlnFile)[0]:
-            raise Exception("Could not match sSlnFile with Solution.FileName")
+        self.vParentDTEWrapper.vDTE.Solution.Open(sSlnFile) #Solution.Open is particularly unreliable. Sometimes it produces halfway incomplete Solutions
         if not hasattr(self.vParentDTEWrapper.vDTE.Solution,"SaveAs"):
-            raise Exception("Freshly opened Solution does not have SaveAs attr.")
+            raise VS.CorruptSolution("Freshly opened Solution does not have SaveAs attr.")
+        elif not (hasattr(self.vParentDTEWrapper.vDTE.Solution,"Projects") and TM.IsCollection(self.vParentDTEWrapper.vDTE.Solution.Projects)):
+            raise VS.CorruptSolution("Freshly opened Solution does not have a Projects collection.")
         return self.vParentDTEWrapper.vDTE.Solution
     ##endregion

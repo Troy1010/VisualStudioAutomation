@@ -14,20 +14,31 @@ import VisualStudioAutomation as VS
 from VisualStudioAutomation._Logger import VSALog
 ##endregion
 
+class CorruptSolution(Exception):
+    """Solution wasn't loaded correctly"""
+
 def IsRetryableException(e):
-    if isinstance(e,pywintypes.com_error):
+    """Some of these might be real errors or they might be a product of a multithread error."""
+    """Since we can't tell the difference, we might want to retry them all."""
+    if isinstance(e,CorruptSolution):
+        VSALog.debug("Retrying "+e.__class__.__name__+" exception:"+str(e))
+        return True
+    elif isinstance(e,pywintypes.com_error):
         if hasattr(e,"hresult"):
             if e.hresult == -2147418111: #Call was rejected by callee.
-                #VSALog.debug("Retrying after \"Call was rejected\" error")
                 return True
             elif e.hresult == -2147023170: #The remote procedure call failed.
                 return True
-    if isinstance(e,AttributeError):
+            elif e.hresult == -2146959355: #Server execution failed
+                return True
+            elif VS.bRetryGenericCOMErrors and e.hresult == -2147352567: #GenericCOMError
+                VSALog.debug("Retrying GenericCOMError")
+                return True
+    elif isinstance(e,AttributeError):
         #Might be the mutlithread bug, might be a true attrib error.
         if VS.bRetryAttribErrors:
             return True
         else:
-            VSALog.debug("MaybeRetryableAttribError:"+TM.Narrate(e))
             try:
                 sOldMsg = e.args[0]
             except AttributeError:
@@ -38,6 +49,9 @@ def IsRetryableException(e):
                 +"\nUntil an effective \"Look before you leap\" strategy is developed for this issue,"
                 +"\nSetting bRetryAttribErrors=True is recommended. If the exception reoccurs, it is a true attrib error."
                 ) from e
+    elif VS.bRetryTypeErrors and isinstance(e,TypeError):
+        VSALog.debug("Retrying TypeError")
+        return True
     return False
 
 def RemoveProjectFromSlnFile(sSlnFile, sProjFile):
