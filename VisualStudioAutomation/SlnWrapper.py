@@ -36,11 +36,12 @@ class SlnWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def Save(self):
-        VSALog.debug("Saving solution.")
         #---Filter
         if not hasattr(self.vSln,"SaveAs"):
-            VSALog.debug("Could not save: no SaveAs attr")
+            VSALog.warning("Could not save solution. No SaveAs attr")
             return
+        else:
+            VSALog.debug("Saving solution.")
         #---
         self.vSln.SaveAs(self.sSlnFile)
 
@@ -78,7 +79,6 @@ class SlnWrapper():
                 else:
                     self.vParentDTEWrapper.cSlnProjPairToDelete.append((self.sSlnFile,os.path.basename(vProj.UniqueName)))
 
-
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _RetryOpenSln(self,sSlnFile):
@@ -90,5 +90,9 @@ class SlnWrapper():
             raise OSError(2, 'No such Solution file', sSlnFile)
         #---
         self.vParentDTEWrapper.vDTE.Solution.Open(sSlnFile)
+        if os.path.split(self.vParentDTEWrapper.vDTE.Solution.FileName)[0] != os.path.split(sSlnFile)[0]:
+            raise Exception("Could not match sSlnFile with Solution.FileName")
+        if not hasattr(self.vParentDTEWrapper.vDTE.Solution,"SaveAs"):
+            raise Exception("Freshly opened Solution does not have SaveAs attr.")
         return self.vParentDTEWrapper.vDTE.Solution
     ##endregion
