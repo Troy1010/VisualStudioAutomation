@@ -91,12 +91,15 @@ class ProjWrapper():
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def AddProjRef(self,vProjToReference):
         if VS.GetProjInContainer(self.vProj.Object.References,vProjToReference) is not None:
-            VSALog.debug("Project reference("+vProjToReference.Name+") already exists.")
+            VSALog.debug("AddProjRef`Project reference already exists.")
             return
         self.vProj.Object.AddProjectReference(vProjToReference)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveProjRef(self,vProjToUnreference):
+        if VS.GetProjInContainer(self.vProj.Object.References,vProjToUnreference) is None:
+            VSALog.debug("RemoveProjRef`Project reference already doesn't exists.")
+            return
         VS.GetProjInContainer(self.vProj.Object.References,vProjToUnreference).Remove()
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

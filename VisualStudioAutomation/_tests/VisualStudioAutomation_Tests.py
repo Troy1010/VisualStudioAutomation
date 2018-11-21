@@ -34,6 +34,13 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_RemoveNonexistantProjRef(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper:
+                with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+                    vProjWrapper.RemoveProjRef("NonexistantProject.vcxproj")
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveProjFromSlnWithoutProj_Ghost(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
