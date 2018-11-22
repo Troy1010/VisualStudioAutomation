@@ -76,7 +76,7 @@ def RemoveProjectFromSlnFile(sSlnFile, sProjFile):
 @retry(retry_on_exception=IsRetryableException,stop_max_delay=10000)
 def GetProjInContainer(vContainer,vProj):
     if isinstance(vProj,str):
-        vProj = os.path.splitext(vProj)[0]
+        vProj = os.path.splitext(os.path.basename(vProj))[0]
     else:
         vProj = vProj.Name
     vItemReturning = None
