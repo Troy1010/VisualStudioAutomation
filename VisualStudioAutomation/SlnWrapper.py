@@ -50,22 +50,15 @@ class SlnWrapper():
         return VS.GetProjInContainer(self.vSln.Projects,vProjToken)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def GetProjInSlnByProjFile(self,sProjFile):
-        #---Open
-        sProjFile = os.path.abspath(sProjFile)
-        #---
-        for vItem in self.vSln.Projects:
-            if hasattr(vItem.Object,"ProjectFile") and vItem.Object.ProjectFile == sProjFile:
-                    return vItem
-
-    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveProj(self,vProj,bRemoveUnloadedPostDTE=False):
         #---Open
         if isinstance(vProj,str):
-            vProj = self.GetProjInSlnByProjFile(vProj)
+            vProjStr = vProj
+            vProj = self.GetProjInSln(vProj)
             if vProj is None:
-                VSALog.debug("RemoveProj`Could not find project to remove.")
+                VSALog.debug("RemoveProj`Could not find project to remove:"+vProjStr)
                 return
+        VSALog.debug("RemoveProj`Open. vProj:"+vProj.Name)
         #---
         try:
             self.vParentDTEWrapper.vDTE.Solution.Remove(vProj)

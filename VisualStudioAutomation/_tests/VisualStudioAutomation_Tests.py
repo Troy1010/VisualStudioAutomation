@@ -202,13 +202,13 @@ class Test_VisualStudioAutomation(unittest.TestCase):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vProj = vSlnWrapper.GetProjInSlnByProjFile("HelloWorld2.vcxproj")
+                    vProj = vSlnWrapper.GetProjInSln("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)
                     vDTEWrapper.OpenProj("HelloWorld2.vcxproj")
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vProj = vSlnWrapper.GetProjInSlnByProjFile("HelloWorld2.vcxproj")
+                    vProj = vSlnWrapper.GetProjInSln("HelloWorld2.vcxproj")
                     self.assertIsNotNone(vProj)
                     vSlnWrapper.RemoveProj("HelloWorld2.vcxproj")
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vProj = vSlnWrapper.GetProjInSlnByProjFile("HelloWorld2.vcxproj")
+                    vProj = vSlnWrapper.GetProjInSln("HelloWorld2.vcxproj")
                     self.assertIsNone(vProj)
