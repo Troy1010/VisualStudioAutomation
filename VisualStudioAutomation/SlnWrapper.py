@@ -47,7 +47,7 @@ class SlnWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def GetProjInSln(self, vProjToken):
-        return VS.GetProjInContainer(self.vSln.Projects,vProjToken)
+        return VS.Find(self.vSln.Projects,vProjToken)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveProj(self,vProj,bRemoveUnloadedPostDTE=False):

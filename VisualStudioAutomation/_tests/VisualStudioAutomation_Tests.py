@@ -34,6 +34,18 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_AddAndRemoveFilter(self):
+        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            self.assertFalse(os.path.isfile("HelloWorld.vcxproj.filters"))
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+                vProjWrapper.AddFilter("Filter54")
+            self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
+            self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+                vProjWrapper.RemoveFilter("Filter54")
+            self.assertFalse(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveNonexistantProjRef(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             with VS.DTEWrapper() as vDTEWrapper:
@@ -92,14 +104,6 @@ class Test_VisualStudioAutomation(unittest.TestCase):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld3.cpp")
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
-
-    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_AddFilterToProj(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
-            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                vProjWrapper.AddFilter("Filter54")
-            self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
-            self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveProjRef(self):

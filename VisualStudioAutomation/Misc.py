@@ -74,16 +74,16 @@ def RemoveProjectFromSlnFile(sSlnFile, sProjFile):
         raise
 
 @retry(retry_on_exception=IsRetryableException,stop_max_delay=10000)
-def GetProjInContainer(vContainer,vProj):
-    if isinstance(vProj,str):
-        vProj = os.path.splitext(os.path.basename(vProj))[0]
+def Find(vContainer,vItem):
+    if isinstance(vItem,str):
+        vItem = os.path.splitext(os.path.basename(vItem))[0]
     else:
-        vProj = vProj.Name
+        vItem = vItem.Name
     vItemReturning = None
-    for vItem in vContainer:
-        if vItem.Name == vProj:
+    for vPossibleMatch in vContainer:
+        if vPossibleMatch.Name == vItem:
             if vItemReturning is None:
-                vItemReturning = vItem
+                vItemReturning = vPossibleMatch
             else:
-                VSALog.warning("GetProjInContainer matched multiple times.")
+                VSALog.warning("Find matched multiple times.")
     return vItemReturning
