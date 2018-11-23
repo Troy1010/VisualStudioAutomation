@@ -34,8 +34,16 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_IsFilterEmpty(self):
+    def test_RemoveSameNameFiles(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
+        with TM.CopyContext("res/Examples_RemoveSameNameFiles_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
+                VSLog_LogTests.info("something:"+TM.Narrate(vProjWrapper.vProj.Object.Files,iRecursionThreshold=3))
+                vProjWrapper.RemoveFile("HelloWorld.h")
+            self.assertFalse(TM.IsTextInFile("HelloWorld.h","HelloWorld.vcxproj"))
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_IsFilterEmpty(self):
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(os.path.isfile("HelloWorld.vcxproj.filters"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:

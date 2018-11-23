@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="HelloWorld.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Folder\HelloWorld.cpp">
+      <Filter>qwer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="HelloWorld.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="qwer">
+      <UniqueIdentifier>{6804cc2e-de4b-4d4d-9706-47e7c45bd85b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

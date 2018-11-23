@@ -53,35 +53,18 @@ class ProjWrapper():
             if self.vProj.Object.CanAddFilter(sFilter):
                 vFilter = self.vProj.Object.AddFilter(sFilter)
             else:
-                for i in range(1,self.vProj.Object.Filters.Count+1):
-                    if self.vProj.Object.Filters.item(i).Name == sFilter:
-                        vFilter = self.vProj.Object.Filters.item(i)
-                        break
+                vFilter = VS.Find(self.vProj.Object.Filters,sFilter)
+                if vFilter is None:
+                    VSALog.debug(TM.FnName()+"`Could not find filter:"+sFilter)
+                    return
             return vFilter.AddFile(sFileToAdd)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def RemoveFile(self,sFileToRemove,bTry=True):
-        #---Open
-        sFileToRemove = os.path.abspath(sFileToRemove)
-        #---Filter
-        #The DTE raises useless exceptions, so we must look before we leap.
-        if not os.path.isfile(sFileToRemove):
-            if bTry:
-                return
-            else:
-                raise OSError(2, 'No such sFileToRemove', sFileToRemove)
-        #---
-        try:
-            vFile = self.vProj.Object.Files.Item(sFileToRemove)
-        except Exception as e:
-            if VS.IsRetryableException(e):
-                raise
-            else:
-                s = "Could not retrieve vFile with sFileToRemove:"+sFileToRemove
-                if not bTry:
-                    s += "\nYou might be trying to remove a file that doesn't exist in the project."
-                    s += "\nTry passing bTry=True a parameter to RemoveFile."
-                raise type(e)(s) from e
+    def RemoveFile(self,sFileToRemove):
+        vFile = VS.Find(self.vProj.Object.Files,sFileToRemove)
+        if vFile is None:
+            VSALog.debug(TM.FnName()+"`File:"+sFileToRemove+" already doesn't exists.")
+            return
         self.vProj.Object.RemoveFile(vFile)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

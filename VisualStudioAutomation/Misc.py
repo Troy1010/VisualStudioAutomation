@@ -81,9 +81,11 @@ def Find(vContainer,vItem):
         vItem = vItem.Name
     vItemReturning = None
     for vPossibleMatch in vContainer:
-        if vPossibleMatch.Name == vItem:
+        if os.path.splitext(vPossibleMatch.Name)[0] == vItem:
             if vItemReturning is None:
                 vItemReturning = vPossibleMatch
             else:
                 VSALog.warning("Find matched multiple times.")
+        else:
+            VSALog.debug(TM.FnName()+"Find`No match:"+vPossibleMatch.Name+" vs "+vItem)
     return vItemReturning

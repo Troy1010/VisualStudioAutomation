@@ -7,7 +7,7 @@ import os
 import subprocess
 
 try:
-    sEvalExr = '(count < 2 and VisualStudioAutomation_Tests) or (count < 2 and VSA_ConvenienceEtree_Tests)'
+    sEvalExr = '(count < 1 and VisualStudioAutomation_Tests) or (count < 0 and VSA_ConvenienceEtree_Tests)'
     subprocess.run(['python','setup.py','nosetests','--tests','VisualStudioAutomation._tests','--stop','--verbosity=3','--eval-attr',sEvalExr])
 except Exception as e:
     print(e)
