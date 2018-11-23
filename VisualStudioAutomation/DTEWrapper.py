@@ -24,9 +24,9 @@ class DTEWrapper():
         global bDTEOpen
         if bDTEOpen:
             raise Exception("Only one DTE can be open at a time.")
+        bDTEOpen = True
         self.vDTE = self._InstantiateDTE()
         self.cSlnProjPairToDelete = []
-        bDTEOpen = True
     def __enter__(self):
         return self
     def __exit__(self, type, value, traceback):
