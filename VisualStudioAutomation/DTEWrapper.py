@@ -47,7 +47,7 @@ class DTEWrapper():
         return SlnWrapper(self, *args, **kwargs)
 
     def GetProjInSln(self, vProjToken):
-        return VS.GetProjInContainer(self.vDTE.Solution.Projects,vProjToken)
+        return VS.Find(self.vDTE.Solution.Projects,vProjToken)
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

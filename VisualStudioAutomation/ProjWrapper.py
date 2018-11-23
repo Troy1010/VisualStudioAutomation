@@ -61,7 +61,7 @@ class ProjWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def RemoveFile(self,sFileToRemove):
-        vFile = VS.Find(self.vProj.Object.Files,sFileToRemove)
+        vFile = VS.FindByPath(self.vProj.Object.Files,sFileToRemove)
         if vFile is None:
             VSALog.debug(TM.FnName()+"`File:"+sFileToRemove+" already doesn't exists.")
             return

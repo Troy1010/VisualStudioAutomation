@@ -55,23 +55,35 @@ def IsRetryableException(e):
     return False
 
 def RemoveProjectFromSlnFile(sSlnFile, sProjFile):
-    try:
-        with open(sSlnFile, 'r+') as vSlnFile:
-            cLines = vSlnFile.readlines()
-            vSlnFile.seek(0)
-            bStartSkipping = False
-            for sLine in cLines:
-                if "Project" == sLine[:7] and os.path.basename(sProjFile) in sLine:
-                    bStartSkipping = True
-                elif bStartSkipping:
-                    bStartSkipping = False
-                    if not "EndProject" in sLine:
-                        VSALog.warning("Expected EndProject at line:"+sLine)
-                else:
-                    vSlnFile.write(sLine)
-            vSlnFile.truncate()
-    except:
-        raise
+    with open(sSlnFile, 'r+') as vSlnFile:
+        cLines = vSlnFile.readlines()
+        vSlnFile.seek(0)
+        bStartSkipping = False
+        for sLine in cLines:
+            if "Project" == sLine[:7] and os.path.basename(sProjFile) in sLine:
+                bStartSkipping = True
+            elif bStartSkipping:
+                bStartSkipping = False
+                if not "EndProject" in sLine:
+                    VSALog.warning("Expected EndProject at line:"+sLine)
+            else:
+                vSlnFile.write(sLine)
+        vSlnFile.truncate()
+
+@retry(retry_on_exception=IsRetryableException,stop_max_delay=10000)
+def FindByPath(vContainer,vItem):
+    if isinstance(vItem,str):
+        vItem = os.path.abspath(vItem)
+    else:
+        vItem = os.path.abspath(vItem.RelativePath)
+    vItemReturning = None
+    for vPossibleMatch in vContainer:
+        if hasattr(vPossibleMatch,"RelativePath") and os.path.abspath(vPossibleMatch.RelativePath) == vItem:
+            if vItemReturning is None:
+                vItemReturning = vPossibleMatch
+            else:
+                VSALog.warning(TM.FnName()+"`matched multiple times.")
+    return vItemReturning
 
 @retry(retry_on_exception=IsRetryableException,stop_max_delay=10000)
 def Find(vContainer,vItem):
@@ -85,7 +97,5 @@ def Find(vContainer,vItem):
             if vItemReturning is None:
                 vItemReturning = vPossibleMatch
             else:
-                VSALog.warning("Find matched multiple times.")
-        else:
-            VSALog.debug(TM.FnName()+"Find`No match:"+vPossibleMatch.Name+" vs "+vItem)
+                VSALog.warning(TM.FnName()+"`matched multiple times.")
     return vItemReturning

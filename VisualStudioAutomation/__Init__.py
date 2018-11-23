@@ -11,6 +11,7 @@ import VisualStudioAutomation as VS
 from VisualStudioAutomation.Misc import IsRetryableException
 from VisualStudioAutomation.Misc import RemoveProjectFromSlnFile
 from VisualStudioAutomation.Misc import Find
+from VisualStudioAutomation.Misc import FindByPath
 from VisualStudioAutomation.Misc import CorruptSolution
 from VisualStudioAutomation.DTEWrapper import DTEWrapper
 from VisualStudioAutomation.ProjWrapper import ProjWrapper
