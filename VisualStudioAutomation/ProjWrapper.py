@@ -86,13 +86,19 @@ class ProjWrapper():
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def AddFilter(self,sFilterName):
+        if VS.Find(self.vProj.Object.Filters,sFilterName) is not None:
+            VSALog.debug("AddFilter`Filter:"+sFilterName+" already exists.")
+            return
         return self.vProj.Object.AddFilter(sFilterName)
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def RemoveFilter(self,sFilterName):
+    def RemoveFilter(self,sFilterName,bOnlyIfEmpty=False):
         vFilter = VS.Find(self.vProj.Object.Filters,sFilterName)
+        if bOnlyIfEmpty and vFilter.Files.Count > 0:
+            VSALog.debug(TM.FnName()+"`Filter:"+sFilterName+" contains files and bOnlyIfEmpty=true.")
+            return
         if vFilter is None:
-            VSALog.debug("RemoveProjRef`Filter:"+sFilterName+" already doesn't exists.")
+            VSALog.debug(TM.FnName()+"`Filter:"+sFilterName+" already doesn't exists.")
             return
         return self.vProj.Object.RemoveFilter(vFilter)
 
