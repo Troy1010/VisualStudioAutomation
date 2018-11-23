@@ -34,24 +34,17 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_RemoveFilterOnlyIfEmpty(self):
+    def test_IsFilterEmpty(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
             self.assertFalse(os.path.isfile("HelloWorld.vcxproj.filters"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                vProjWrapper.AddFilter("Filter54")
-            self.assertTrue(os.path.isfile("HelloWorld.vcxproj.filters"))
-            self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
-            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-                vProjWrapper.RemoveFilter("Filter54",bOnlyIfEmpty=True)
-            self.assertFalse(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
-            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld2.cpp",sFilter="Filter54")
-#                VSLog_LogTests.info("vFilter:"+TM.Narrate(VS.Find(vProjWrapper.vProj.Object.Filters,"Filter54")))
+                self.assertFalse(vProjWrapper.IsFilterEmpty("Filter54"))
             self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
-               vProjWrapper.RemoveFilter("Filter54",bOnlyIfEmpty=True)
-            self.assertTrue(TM.IsTextInFile("Filter54","HelloWorld.vcxproj.filters"))
+                vProjWrapper.RemoveFile("HelloWorld2.cpp")
+                self.assertTrue(vProjWrapper.IsFilterEmpty("Filter54"))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveFilter(self):
