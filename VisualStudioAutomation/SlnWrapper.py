@@ -32,6 +32,7 @@ class SlnWrapper():
         if not self.vSln is None:
             if self.bSave:
                 self.Save()
+            VS.MakeProjectPathsRelativeInSlnFile(self.sSlnFile)
             self.vSln = None
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)

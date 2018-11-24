@@ -54,6 +54,20 @@ def IsRetryableException(e):
         return True
     return False
 
+def MakeProjectPathsRelativeInSlnFile(sSlnFile):
+    with open(sSlnFile, 'r+') as vSlnFile:
+        cLines = vSlnFile.readlines()
+        vSlnFile.seek(0)
+        bStartSkipping = False
+        for sLine in cLines:
+            if "Project" == sLine[:7]:
+                iDoubleQuotesPos = sLine.find("\"",sLine.find(","))
+                sOldPath = sLine[iDoubleQuotesPos+1:sLine.find("\"",iDoubleQuotesPos+1)]
+                sNewPath = os.path.relpath(sOldPath)
+                sLine = sLine.replace(sOldPath,sNewPath,1)
+            vSlnFile.write(sLine)
+        vSlnFile.truncate()
+
 def RemoveProjectFromSlnFile(sSlnFile, sProjFile):
     with open(sSlnFile, 'r+') as vSlnFile:
         cLines = vSlnFile.readlines()

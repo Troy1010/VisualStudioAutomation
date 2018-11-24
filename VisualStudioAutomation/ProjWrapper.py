@@ -132,6 +132,7 @@ class ProjWrapper():
             sProjectGUID = VS.GetProjectGUID(sProjFile)
             for vItem in self.vParentDTEWrapper.vDTE.Solution.Projects:
                 if hasattr(vItem,"object") and hasattr(vItem.object,"ProjectGUID") and vItem.object.ProjectGUID == sProjectGUID:
+                    VSALog.debug("Solution already had project:" + vItem.Name)
                     return vItem
             else:
                 VSALog.debug("Could not match sProjectGUID:" + sProjectGUID)

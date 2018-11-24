@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="HelloWorld.cpp">
+      <Filter>InFolder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HelloWorld.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="..\HelloWorld.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="InFolder">
+      <UniqueIdentifier>{38750718-8bec-4260-bbb2-06d2ecac50a1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

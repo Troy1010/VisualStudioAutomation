@@ -13,6 +13,7 @@ from VisualStudioAutomation.Misc import RemoveProjectFromSlnFile
 from VisualStudioAutomation.Misc import Find
 from VisualStudioAutomation.Misc import FindByPath
 from VisualStudioAutomation.Misc import CorruptSolution
+from VisualStudioAutomation.Misc import MakeProjectPathsRelativeInSlnFile
 from VisualStudioAutomation.DTEWrapper import DTEWrapper
 from VisualStudioAutomation.ProjWrapper import ProjWrapper
 from VisualStudioAutomation.SlnWrapper import SlnWrapper
