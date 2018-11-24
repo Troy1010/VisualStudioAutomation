@@ -15,8 +15,6 @@ import psutil
 import logging, os
 ##endregion
 
-#The Solution is actually just a collection object belonging to the DTE.
-#It doesn't look like there can be multiple open at a time.
 class SlnWrapper():
     vSln = None
     def __init__(self,vParentDTEWrapper,sSlnFile,bSave=True):
@@ -44,7 +42,7 @@ class SlnWrapper():
         else:
             VSALog.debug("Saving solution.")
         #---
-        self.vSln.SaveAs(self.sSlnFile)
+        self.vSln.SaveAs(self.sSlnFile) #Solutions do not have a .Save()
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def GetProjInSln(self, vProjToken):
@@ -66,7 +64,7 @@ class SlnWrapper():
         except pywintypes.com_error as e:
             if e.hresult != -2147352567: #Generic error, presumably because vProj is unloaded
                 raise
-            if vProj.Object is None:
+            if vProj.Object is None: #Project is unloaded
                 if not bRemoveUnloadedPostDTE:
                     raise Exception("You have attempted to remove an unloaded project, but the DTE com object has trouble doing that."
                                     "\nSet bRemoveUnloadedPostDTE to true if you want the project to be removed after the DTE closes.")
