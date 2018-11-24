@@ -100,7 +100,6 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveProjFromSlnWithoutProj_Ghost(self):
-        VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
@@ -111,7 +110,6 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjInSln_ByName(self):
-        VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
@@ -119,7 +117,6 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_LogProjectList(self):
-        VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:

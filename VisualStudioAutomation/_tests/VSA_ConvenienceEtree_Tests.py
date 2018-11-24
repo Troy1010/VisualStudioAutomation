@@ -43,7 +43,6 @@ class Test_VSA_XML(TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjectGuid(self):
-        VSLog_LogTests.info("\n\n-------"+TM.FnName())
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_XML_Backup",bPostDelete=False,bCDInto=True):
             vVar = VS.GetProjectGUID('HelloWorld.vcxproj')
             VSLog_LogTests.info("vVar:"+str(vVar))
