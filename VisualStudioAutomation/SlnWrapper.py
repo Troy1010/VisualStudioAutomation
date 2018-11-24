@@ -37,10 +37,8 @@ class SlnWrapper():
     def Save(self):
         #---Filter
         if not hasattr(self.vSln,"SaveAs"):
-            VSALog.warning("Could not save solution. No SaveAs attr")
-            return
-        else:
-            VSALog.debug("Saving solution.")
+            raise VS.CorruptSolution("Solution.Save()`Solution does not have SaveAs attr.")
+        VSALog.debug("Saving solution.")
         #---
         self.vSln.SaveAs(self.sSlnFile) #Solutions do not have a .Save()
 
@@ -64,12 +62,13 @@ class SlnWrapper():
         except pywintypes.com_error as e:
             if e.hresult != -2147352567: #Generic error, presumably because vProj is unloaded
                 raise
-            if vProj.Object is None: #Project is unloaded
-                if not bRemoveUnloadedPostDTE:
-                    raise Exception("You have attempted to remove an unloaded project, but the DTE com object has trouble doing that."
-                                    "\nSet bRemoveUnloadedPostDTE to true if you want the project to be removed after the DTE closes.")
-                else:
-                    self.vParentDTEWrapper.cSlnProjPairToDelete.append((self.sSlnFile,os.path.basename(vProj.UniqueName)))
+            if vProj.Object is not None: #Project is loaded
+                raise
+            if bRemoveUnloadedPostDTE:
+                self.vParentDTEWrapper.cSlnProjPairToDelete.append((self.sSlnFile,os.path.basename(vProj.UniqueName)))
+            else:
+                raise Exception("You have attempted to remove an unloaded project, but the DTE com object has trouble doing that."
+                                "\nSet bRemoveUnloadedPostDTE to true if you want the project to be removed after the DTE closes.")
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
