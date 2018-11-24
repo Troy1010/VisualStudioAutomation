@@ -17,15 +17,11 @@ import psutil
 import logging, os
 ##endregion
 
-bDTEOpen = False
-
 class DTEWrapper():
     def __init__(self):
-        global bDTEOpen
-        if bDTEOpen:
-            raise Exception("Only one DTE can be open at a time.")
-        bDTEOpen = True
-        self.vDTE = self._InstantiateDTE()
+        if self._IsDTEOpen():
+            raise Exception("A VisualStudio DTE is already open.")
+        self.vDTE = win32com.client.Dispatch(VS.sVisualStudioDTE)
         self.cSlnProjPairToDelete = []
     def __enter__(self):
         return self
@@ -37,8 +33,6 @@ class DTEWrapper():
             self.vDTE = None
         for vItem in self.cSlnProjPairToDelete:
             VS.RemoveProjectFromSlnFile(*vItem)
-        global bDTEOpen
-        bDTEOpen = False
 
     def OpenProj(self, *args, **kwargs):
         return ProjWrapper(self, *args, **kwargs)
@@ -51,8 +45,16 @@ class DTEWrapper():
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def _InstantiateDTE(self):
-        return win32com.client.Dispatch(VS.sVisualStudioDTE)
+    def _GetActiveDTE(self):
+        try:
+            return win32com.client.GetActiveObject(VS.sVisualStudioDTE)
+        except pywintypes.com_error as e:
+            if e.hresult == -2147221021: #Operation unavailable, presumably because no DTE is open
+                return None
+            raise
+
+    def _IsDTEOpen(self):
+        return self._GetActiveDTE() is not None
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
     def _QuitDTE(self):
@@ -60,20 +62,16 @@ class DTEWrapper():
         iPID = win32process.GetWindowThreadProcessId(self.vDTE.ActiveWindow.HWnd)[1] #GetPID after Solution.Close() because Solution.Close() has to wait for GetPID.
         self.vDTE.Quit()
         fTimer = VS.fClosePIDTimeout
-        while psutil.pid_exists(iPID):
+        while psutil.pid_exists(iPID): #Maybe this could be replaced with _IsDTEOpen.
             try:
                 self.vDTE.Solution.Close()
-            except Exception as e:
-                if e.hresult == -2147417848: #The object invoked has disconnected from its clients.
-                    pass
-                else:
+            except pywintypes.com_error as e:
+                if e.hresult != -2147417848: #The object invoked has disconnected from its clients.
                     raise
             try:
                 self.vDTE.Quit()
-            except Exception as e:
-                if e.hresult == -2147417848: #The object invoked has disconnected from its clients.
-                    pass
-                else:
+            except pywintypes.com_error as e:
+                if e.hresult != -2147417848: #The object invoked has disconnected from its clients.
                     raise
             if fTimer < 0:
                 raise TimeoutError("Timed out while waiting for PID to close:"+str(iPID))
