@@ -34,6 +34,17 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_AndAddRemoveProjFromSln(self):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
+            self.assertFalse(TM.IsTextInFile(r"HelloWorld2.vcxproj","HelloWorld.sln"))
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenSln("HelloWorld.sln"):
+                vDTEWrapper.OpenProj("HelloWorld2.vcxproj")
+            self.assertTrue(TM.IsTextInFile(r"HelloWorld2.vcxproj","HelloWorld.sln"))
+            with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
+                vSlnWrapper.RemoveProj("HelloWorld2.vcxproj")
+            self.assertFalse(TM.IsTextInFile(r"HelloWorld2.vcxproj","HelloWorld.sln"))
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_SaveSlnWithoutSmashingProjRelPaths(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_SaveSlnWithoutSmashingProjRelPaths_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(TM.IsTextInFile(r"..\..\..\..","HelloWorld.sln"))
@@ -220,21 +231,6 @@ class Test_VisualStudioAutomation(unittest.TestCase):
                 with self.assertRaises(FileNotFoundError):
                     with vDTEWrapper.OpenProj("NonexistantProject.vcxproj") as vProjWrapper:
                         pass
-
-    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_AddProjToSln(self):
-        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
-            with VS.DTEWrapper() as vDTEWrapper:
-                with vDTEWrapper.OpenSln("HelloWorld.sln"):
-                    with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
-                        pass
-
-    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
-    def test_RemoveProjFromSln(self):
-        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
-            with VS.DTEWrapper() as vDTEWrapper:
-                with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
-                    vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjInSlnFromProjString(self):
