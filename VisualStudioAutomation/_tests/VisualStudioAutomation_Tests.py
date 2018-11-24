@@ -35,7 +35,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_SaveSlnWithoutSmashingProjRelPaths(self):
-        with TM.CopyContext("res/Examples_SaveSlnWithoutSmashingProjRelPaths_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_SaveSlnWithoutSmashingProjRelPaths_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(TM.IsTextInFile(r"..\..\..\..","HelloWorld.sln"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper, vDTEWrapper.OpenProj("Folder/HelloWorld.vcxproj") as vProjWrapper:
                 pass
@@ -43,7 +43,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveSameNameFiles2(self):
-        with TM.CopyContext("res/Examples_RemoveSameNameFiles_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_RemoveSameNameFiles_Backup",bPostDelete=False,bCDInto=True):
             self.assertTrue(TM.IsTextInFile("Folder\\HelloWorld.cpp","HelloWorld.vcxproj"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.RemoveFile("Folder\\HelloWorld.cpp")
@@ -51,14 +51,14 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveSameNameFiles(self):
-        with TM.CopyContext("res/Examples_RemoveSameNameFiles_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_RemoveSameNameFiles_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.RemoveFile("HelloWorld.h")
             self.assertFalse(TM.IsTextInFile("HelloWorld.h","HelloWorld.vcxproj"))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_IsFilterEmpty(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(os.path.isfile("HelloWorld.vcxproj.filters"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld2.cpp",sFilter="Filter54")
@@ -70,7 +70,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveFilter(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(os.path.isfile("HelloWorld.vcxproj.filters"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFilter("Filter54")
@@ -82,7 +82,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveNonexistantProjRef(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                     vProjWrapper.RemoveProjRef("NonexistantProject.vcxproj")
@@ -90,7 +90,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveProjFromSlnWithoutProj_Ghost(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
                     sSlnFile = vSlnWrapper.sSlnFile
@@ -101,7 +101,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjInSln_ByName(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("CompleteControl.sln") as vSlnWrapper:
                     VSLog_LogTests.info(TM.Narrate(vSlnWrapper.GetProjInSln("CompleteControl")))
@@ -109,7 +109,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_LogProjectList(self):
         VSLog_LogTests.info("\n\n-------"+TM.FnName())
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     VSLog_LogTests.info("HelloWorld Projects:"+TM.Narrate(vSlnWrapper.vSln.Projects,iRecursionThreshold=3))
@@ -118,7 +118,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_TwoDTEs(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with self.assertRaises(Exception):
                 with VS.DTEWrapper() as vDTEWrapper:
                     with VS.DTEWrapper() as vDTEWrapper2:
@@ -126,7 +126,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveProjFromSlnByName(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     self.assertFalse(vDTEWrapper.GetProjInSln("HelloWorld") is None)
@@ -135,14 +135,14 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddFileToProj(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld3.cpp")
             self.assertTrue(TM.IsTextInFile("HelloWorld3.cpp","HelloWorld.vcxproj"))
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveProjRef(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
                 self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
                 vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
@@ -160,7 +160,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveProjRef_String(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper, vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjToReferenceWrapper:
                 self.assertFalse(TM.IsTextInFile("HelloWorld2","HelloWorld.vcxproj"))
                 vProjWrapper.AddProjRef(vProjToReferenceWrapper.vProj)
@@ -178,7 +178,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_Add2FilesToProj(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld2.cpp","obse")
                 vProjWrapper.AddFile("HelloWorld3.cpp","obse")
@@ -187,7 +187,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveFileFromProj(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
             with VS.DTEWrapper() as vDTEWrapper, vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                 vProjWrapper.AddFile("HelloWorld2.cpp","Filter67")
@@ -200,7 +200,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddAndRemoveFileFromProj2(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenProj("HelloWorld.vcxproj") as vProjWrapper:
                     self.assertFalse(TM.IsTextInFile("HelloWorld2.cpp","HelloWorld.vcxproj"))
@@ -215,7 +215,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddFile_FileDoesntExist(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with self.assertRaises(FileNotFoundError):
                     with vDTEWrapper.OpenProj("NonexistantProject.vcxproj") as vProjWrapper:
@@ -223,7 +223,7 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AddProjToSln(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln"):
                     with vDTEWrapper.OpenProj("HelloWorld2.vcxproj") as vProjWrapper:
@@ -231,14 +231,14 @@ class Test_VisualStudioAutomation(unittest.TestCase):
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_RemoveProjFromSln(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vSlnWrapper.RemoveProj("HelloWorld.vcxproj")
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_GetProjInSlnFromProjString(self):
-        with TM.CopyContext("res/Examples_Backup",self.sTestWorkspace+TM.FnName(),bPostDelete=False):
+        with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             with VS.DTEWrapper() as vDTEWrapper:
                 with vDTEWrapper.OpenSln("HelloWorld.sln") as vSlnWrapper:
                     vProj = vSlnWrapper.GetProjInSln("HelloWorld2.vcxproj")
