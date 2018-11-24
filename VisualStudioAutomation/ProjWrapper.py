@@ -17,11 +17,10 @@ import logging, os
 
 class ProjWrapper():
     vProj = None
-    def __init__(self,vParentDTEWrapper,sProjFile,bSave=True,bRemove=False):
+    def __init__(self,vParentDTEWrapper,sProjFile,bSave=True):
         self.vParentDTEWrapper = vParentDTEWrapper
         self.sProjFile = sProjFile
         self.bSave = bSave
-        self.bRemove = bRemove
         try:
             self.vProj = self._RetryOpenProj(sProjFile)
         except:
@@ -33,10 +32,8 @@ class ProjWrapper():
         self.Close()
     def Close(self):
         if not self.vProj is None:
-            if self.bSave and hasattr(self.vProj,"Save"):
+            if self.bSave:
                 self.Save()
-            if self.bRemove:
-                self.Remove()
             self.vProj = None
 
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
@@ -108,10 +105,6 @@ class ProjWrapper():
     def Save(self):
         VSALog.debug("Saving project.")
         self.vProj.Save()
-
-    @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
-    def Remove(self):
-        self.vParentDTEWrapper.vDTE.Solution.Remove(self.vProj)
 
     ##region Private
     @retry(retry_on_exception=VS.IsRetryableException,stop_max_delay=10000)
