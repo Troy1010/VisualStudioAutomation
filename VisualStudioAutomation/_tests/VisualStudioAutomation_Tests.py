@@ -16,7 +16,7 @@ from VisualStudioAutomation._tests._Logger import VSLog_LogTests
 vCounter = TM.Counter()
 
 class Test_VisualStudioAutomation(unittest.TestCase):
-    sTestWorkspace = "TestWorkspace/"
+    sTestWorkspace = "_TestWorkspace/"
 
     @classmethod
     def setUpClass(self):

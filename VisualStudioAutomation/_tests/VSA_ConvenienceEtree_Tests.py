@@ -18,7 +18,7 @@ from VisualStudioAutomation._tests._Logger import VSLog_LogTests
 vCounter = TM.Counter()
 
 class Test_VSA_XML(TestCase):
-    sTestWorkspace = "TestWorkspace_XML/"
+    sTestWorkspace = "_TestWorkspace_XML/"
 
     @classmethod
     def setUpClass(self):
