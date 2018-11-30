@@ -34,6 +34,12 @@ class Test_VisualStudioAutomation(unittest.TestCase):
     #------Tests
 
     @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
+    def test_VSLog_LogTests_Header(self):
+        VSLog_LogTests.info("Hi")
+        VSLog_LogTests.debug("Hi")
+        VSLog_LogTests.info("Hi")
+
+    @attr(**{'count':vCounter(),__name__.rsplit(".",1)[-1]:True})
     def test_AndAddRemoveProjFromSln(self):
         with TM.WorkspaceContext(self.sTestWorkspace+TM.FnName(),sSource="res/Examples_Backup",bPostDelete=False,bCDInto=True):
             self.assertFalse(TM.IsTextInFile(r"HelloWorld2.vcxproj","HelloWorld.sln"))
